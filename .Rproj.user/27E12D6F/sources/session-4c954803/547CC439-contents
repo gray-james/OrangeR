@@ -1,0 +1,129 @@
+# config.yaml
+# Author: James Gray
+# Last Updated: 2025-07-01
+#
+# Description:
+# This file contains all the configurable settings for the 'OrangeR' R package.
+# It allows users to easily customize how raw timesheet data is imported,
+# processed, and exported, as well as define quality assurance (QA) parameters.
+#
+# --- IMPORTANT INFORMATION FOR USERS ---
+#
+# What is YAML?
+# YAML (YAML Ain't Markup Language) is a human-friendly data serialization
+# standard. It's designed to be easy for humans to read and write, making it
+# perfect for configuration files like this one.
+#
+# How to Edit This File:
+# 1. Use a plain text editor: Open this file with a simple text editor like
+#    Notepad (Windows), TextEdit (macOS - ensure you save as plain text),
+#    VS Code, Sublime Text, or Atom. Avoid word processors like Microsoft Word,
+#    as they can add hidden formatting that will break the file.
+# 2. Change ONLY the values: Modify the text to the right of the colon (:)
+#    for each setting. For example, to change the output directory,
+#    you would change '/path/to/default/output' to your desired path.
+# 3. Indentation matters: YAML uses spaces (not tabs!) for indentation to
+#    define structure. Do NOT change the leading spaces. Each level of
+#    indentation typically uses 2 spaces.
+# 4. Strings: If a value contains special characters (like spaces, colons,
+#    or starts with a number), it's safest to enclose it in single or double
+#    quotes (e.g., 'My Project Data').
+# 5. Booleans: Use 'true' or 'false' (lowercase) for true/false settings.
+# 6. Lists: Items in a list are indicated by a hyphen (-) followed by a space.
+#    (e.g., - pattern_alpha).
+# 7. Comments: Any line starting with a '#' is a comment and is ignored by
+#    the program. Use them to make notes for yourself.
+#
+# If you make a mistake, the R script might show an error when trying to
+# read this file. If that happens, double-check your changes carefully,
+# especially indentation and quotes.
+#
+# ---------------------------------------
+
+# --- GROUP CONFIGURATIONS ---
+# This section maps your cleaning groups to specific regex pattern definitions
+# found in 'regex_patterns.yaml'.
+# Each key (e.g., 'group_A') should correspond to a cleaning group identifier.
+# The value should be the name of a group definition from 'regex_patterns.yaml'
+# (e.g., 'group_1_config', 'group_2_config').
+group_configurations:
+  group_A: "group_1_config"
+  group_B: "group_2_config"
+  group_C: "group_3_config"
+
+# default_group_definition: The name of the group definition to use if a
+#                           specific cleaning group is not found in the
+#                           'group_configurations' above.
+default_group_definition: "group_1_config"
+
+# --- 1. IMPORT SETTINGS ---
+# These settings control how the raw timesheet data is read and prepared.
+import:
+  # raw_time_path: The absolute path to the directory where your raw timesheet
+  #                files (e.g., PDFs, CSVs) are located.
+  #                Example: '/Users/yourname/Documents/timesheet_raw_data'
+  raw_time_path: "/path/to/default/raw_data"
+
+  # date_format: The format string used to parse dates from your raw data.
+  #              Common formats:
+  #              - "%Y-%m-%d" for '2025-01-31'
+  #              - "%m/%d/%Y" for '01/31/2025'
+  #              - "%d-%b-%Y" for '31-Jan-2025'
+  date_format: "%Y-%m-%d"
+
+  # file_encoding: The character encoding of your raw timesheet files.
+  #                Common encodings: "UTF-8", "latin1", "windows-1252".
+  file_encoding: "UTF-8"
+
+  # Add more import-specific parameters here as needed.
+  # For example:
+  # skip_rows: 5 # Number of header rows to skip in CSV/Excel files
+
+# --- 2. EXPORT SETTINGS ---
+# These settings define how the cleaned and processed data will be saved.
+export:
+  # output_directory: The absolute path to the directory where the processed
+  #                   timesheet data will be saved.
+  #                   Example: '/Users/yourname/Documents/timesheet_processed'
+  output_directory: "/path/to/default/output"
+
+  # file_prefix: A string to prepend to the name of the output file(s).
+  #              Example: If 'processed_timesheet_', output might be
+  #              'processed_timesheet_2025-07-01.csv'
+  file_prefix: "processed_timesheet_"
+
+  # output_format: The format in which to save the processed data.
+  #                Supported: "csv", "xlsx", "rds".
+  output_format: "csv"
+
+  # include_qa_flags: Set to 'true' to include the 'data_quality_flags'
+  #                   column in the exported data, or 'false' to exclude it.
+  include_qa_flags: true
+
+  # Add more export-specific parameters here as needed.
+  # For example:
+  # overwrite_existing: false # Set to true to overwrite files if they exist
+
+# --- 3. QUALITY ASSURANCE (QA) SETTINGS ---
+# These settings define thresholds and rules for data quality checks.
+qa:
+  # thresholds: Numerical limits for various data quality checks.
+  thresholds:
+    # min_shift_hours: Minimum acceptable duration for a single work shift in hours.
+    min_shift_hours: 1
+
+    # max_shift_hours: Maximum acceptable duration for a single work shift in hours.
+    max_shift_hours: 16
+
+    # max_consecutive_days: Maximum number of consecutive days an employee can
+    #                       work without a break.
+    max_consecutive_days: 7
+
+  # enable_strict_mode: If 'true', the QA process will be more stringent,
+  #                     potentially flagging more issues. If 'false', it will
+  #                     be more lenient.
+  enable_strict_mode: false
+
+  # Add more QA-specific parameters here as needed.
+  # For example:
+  # flag_missing_data: true # Set to true to flag rows with missing critical data

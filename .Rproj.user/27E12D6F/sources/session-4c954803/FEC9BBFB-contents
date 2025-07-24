@@ -1,0 +1,21 @@
+
+graph TD
+    A[Start Development of Core Features] --> B{Create preProd Branch};
+    B --> C[Develop Features on preProd Branch];
+    C --> D{Features Complete?};
+    D -- Yes --> E[Collaborative Assessment with Senior Analysts];
+    E -- Accepted --> F[Initiate Pull Request to main];
+    F --> G{PR Review and Approval};
+    G -- Approved --> H[Merge preProd to main];
+    H --> I[Initialize V1 of Package];
+    I --> J[End];
+
+    %% Styling
+    classDef default fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef decision fill:#c9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#9cf,stroke:#333,stroke-width:2px;
+    classDef start_end fill:#fcf,stroke:#333,stroke-width:2px;
+
+    class A,J start_end;
+    class B,D,E,G decision;
+    class C,F,H,I process;

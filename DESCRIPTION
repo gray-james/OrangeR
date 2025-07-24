@@ -1,0 +1,31 @@
+Package: OrangeR
+Title: A Robust ETL Pipeline for Cleaning Messy Timesheet Data
+Version: 1.0.0
+Authors@R: 
+    person("James", "Gray", email = "james.gray@example.com", role = c("aut", "cre"), comment = c(ORCID = "YOUR-ORCID-ID", work_id = "JG3288"))
+Description: A comprehensive ETL (Extract, Transform, Load) toolkit designed to ingest, clean, structure, and validate messy timesheet data from various sources, including unstructured PDFs and structured CSV/Excel files. It intelligently handles common data quality issues like multi-column spillage and inconsistent formats, transforming raw data into an analysis-ready, unified dataset with extensive quality assurance checks.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports:
+    assertthat,
+    cli,
+    dplyr,
+    furrr,
+    future,
+    lubridate,
+    magrittr,
+    openxlsx,
+    pdftools,
+    progress,
+    pryr,
+    purrr,
+    rlang,
+    stringr,
+    tidyr,
+    tidyselect,
+    yaml
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

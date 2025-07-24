@@ -1,0 +1,217 @@
+# regex_patterns.yaml
+# Author: James Gray
+# Last Updated: 2025-07-01
+#
+# Description:
+# This file defines a comprehensive library of regular expression patterns
+# categorized by data type, along with metadata for each pattern.
+# It also defines how these patterns are combined into specific group configurations.
+#
+# --- Structure of a Pattern Entry ---
+# Each pattern entry under a category (e.g., 'dates', 'times') should have:
+#   regex: The actual regular expression string.
+#   description: A clear explanation of what the pattern matches.
+#   example: A string that the pattern would successfully match.
+#   complexity: A qualitative measure (e.g., "simple", "medium", "complex").
+#   tags: Optional keywords for further categorization (e.g., "US_format", "24_hour").
+#
+# --- How to Add New Patterns ---
+# 1. Identify the appropriate category (e.g., 'dates', 'times'). If a new category
+#    is needed, create it.
+# 2. Choose a unique, descriptive name for your pattern (e.g., 'dd_mm_yyyy_slash').
+# 3. Add the 'regex', 'description', 'example', 'complexity', and 'tags' fields.
+#
+# --- Group Definitions ---
+# The 'group_definitions' section combines these patterns into named configurations
+# that can be used by different cleaning groups. Each entry in a group definition
+# references a pattern by its category and name (e.g., 'dates.dd_mm_yyyy_slash').
+#
+# ------------------------------------------------------------------------------
+
+patterns:
+  # --- Date Patterns ---
+  dates:
+    # Example: 01/31/2025, 1/31/25
+    mm_dd_yyyy_slash:
+      regex: "\\b(\\d{1,2}/\\d{1,2}/\\d{2,4})\\b"
+      description: "Matches dates in MM/DD/YYYY or MM/DD/YY format, optionally with leading zeros."
+      example: "01/31/2025"
+      complexity: "simple"
+      tags: ["US_format", "slash_separator"]
+
+    # Example: 31-Jan-2025, 31-Jan-25
+    dd_mon_yyyy_dash:
+      regex: "\\b(\\d{1,2}-[A-Za-z]{3}-\\d{2,4})\\b"
+      description: "Matches dates in DD-Mon-YYYY or DD-Mon-YY format (e.g., 31-Jan-2025)."
+      example: "31-Jan-2025"
+      complexity: "medium"
+      tags: ["alpha_month", "dash_separator"]
+
+    # Example: 2025-01-31
+    yyyy_mm_dd_dash:
+      regex: "\\b(\\d{4}-\\d{1,2}-\\d{1,2})\\b"
+      description: "Matches dates in YYYY-MM-DD format."
+      example: "2025-01-31"
+      complexity: "simple"
+      tags: ["ISO_format", "dash_separator"]
+
+    # Example: 01.31.2025, 1.31.25 (with optional dot separators)
+    mm_dd_yyyy_dot_optional:
+      regex: "\\b(\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4})\\b"
+      description: "Matches dates with flexible separators (slash, dash, or dot)."
+      example: "01.31.2025"
+      complexity: "medium"
+      tags: ["flexible_separator"]
+
+    # Example: Jan 31, 2025 (with optional comma)
+    mon_dd_yyyy_space:
+      regex: "\\b([A-Za-z]{3}\\s+\\d{1,2}(?:,\\s*)?\\d{4})\\b"
+      description: "Matches dates like Jan 31, 2025 or Jan 31 2025."
+      example: "Jan 31, 2025"
+      complexity: "complex"
+      tags: ["alpha_month", "space_separator"]
+
+  # --- Time Patterns ---
+  times:
+    # Example: 08:00:00 AM, 8:00 AM
+    hh_mm_ss_am_pm:
+      regex: "\\b(\\d{1,2}:\\d{2}(?::\\d{2})?\\s*[AP]M)\\b"
+      description: "Matches 12-hour time with optional seconds and AM/PM indicator."
+      example: "08:00:00 AM"
+      complexity: "medium"
+      tags: ["12_hour", "AM_PM"]
+
+    # Example: 14:30, 09:15
+    hh_mm_24_hour:
+      regex: "\\b(\\d{1,2}:\\d{2})\\b"
+      description: "Matches 24-hour time (HH:MM)."
+      example: "14:30"
+      complexity: "simple"
+      tags: ["24_hour"]
+
+    # Example: 0800, 1430 (no colon)
+    hhmm_no_colon:
+      regex: "\\b(\\d{4})\\b"
+      description: "Matches 4-digit time without a colon (e.g., 0800 for 08:00)."
+      example: "0800"
+      complexity: "simple"
+      tags: ["no_colon"]
+
+  # --- Name Extraction Patterns ---
+  names:
+    # Example: John Doe, Jane A. Smith
+    full_name_alpha_space:
+      regex: "^([A-Za-z]+\\s+[A-Za-z.]+(?:\\s+[A-Za-z.]+)?)"
+      description: "Matches typical full names (first, middle initial/name, last)."
+      example: "John Doe"
+      complexity: "medium"
+      tags: ["person_name"]
+
+    # Example: (Employee Name) or Employee Name)
+    ends_with_bracket:
+      regex: "^(.+)\\)\\s*$"
+      description: "Matches any text ending with a closing parenthesis, capturing content before it."
+      example: "(Employee Name)"
+      complexity: "simple"
+      tags: ["parentheses"]
+
+    # Example: Everything before a date pattern
+    before_date_marker:
+      regex: "^(.+?)(?=\\b(\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4})\\b)" # Placeholder, actual logic in R
+      description: "Placeholder for logic to extract text before a recognized date pattern."
+      example: "Employee Name 01/01/2023" # Name is 'Employee Name'
+      complexity: "complex"
+      tags: ["conditional"]
+
+    # Example: Single word name
+    single_word:
+      regex: "^([A-Za-z]+)\\s*$"
+      description: "Matches a single word as a name."
+      example: "Alice"
+      complexity: "simple"
+      tags: ["single_word"]
+
+  # --- Work Time / Numeric Patterns ---
+  work_times:
+    # Example: 8.5, 12, 7.00
+    decimal_or_integer:
+      regex: "\\b(\\d{1,2}(?:\\.\\d+)?)\\s*$"
+      description: "Matches a decimal or integer number at the end of a string, representing hours."
+      example: "8.5"
+      complexity: "simple"
+      tags: ["numeric", "hours"]
+
+  # --- Total Patterns ---
+  totals:
+    # Example: 40, 120 (2 or 3 digits standalone)
+    two_three_digit_standalone:
+      regex: "\\b(\\d{2,3})\\b"
+      description: "Matches a standalone 2 or 3 digit number."
+      example: "40"
+      complexity: "simple"
+      tags: ["numeric", "total"]
+
+    # Example: 40 (at end of string)
+    two_three_digit_end_string:
+      regex: "(\\d{2,3})\\s*$"
+      description: "Matches a 2 or 3 digit number at the very end of a string."
+      example: "Total: 40"
+      complexity: "simple"
+      tags: ["numeric", "total"]
+
+
+group_definitions:
+  # --- Group 1 Configuration (Original-like) ---
+  group_1_config:
+    name_extraction_rules:
+      type: "before_date"
+      date_pattern_ref: "dates.mm_dd_yyyy_slash" # Reference to a pattern in the 'patterns' section
+    date_patterns_refs:
+      - "dates.mm_dd_yyyy_slash"
+    time_patterns_refs:
+      - "times.hh_mm_ss_am_pm"
+    work_time_pattern_ref: "work_times.decimal_or_integer"
+    work_time_condition: "date_present"
+    time_extraction_condition: "date_present"
+    total_type: "weekly"
+    total_location: "col1_standalone"
+    total_pattern_ref: "totals.two_three_digit_standalone"
+
+  # --- Group 2 Configuration (Complex Conditional) ---
+  group_2_config:
+    name_extraction_rules:
+      type: "complex_conditional"
+      patterns_refs:
+        ends_with_bracket: "names.ends_with_bracket"
+        before_date: "names.before_date_marker"
+        before_number_no_time: "work_times.decimal_or_integer" # Reference to work time pattern for conditional logic
+        single_word: "names.single_word"
+    date_patterns_refs:
+      - "dates.mm_dd_yyyy_dot_optional"
+      - "dates.dd_mon_yyyy_dash"
+    time_patterns_refs:
+      - "times.hh_mm_24_hour"
+    work_time_pattern_ref: "work_times.decimal_or_integer"
+    work_time_condition: "date_present"
+    total_type: "fortnightly"
+    total_location: "end_string_no_times"
+    total_pattern_ref: "totals.two_three_digit_end_string"
+
+  # --- Group 3 Configuration (Similar to Group 2, but separate) ---
+  group_3_config:
+    name_extraction_rules:
+      type: "complex_conditional"
+      patterns_refs:
+        ends_with_bracket: "names.ends_with_bracket"
+        before_date: "names.before_date_marker"
+        single_word: "names.single_word"
+    date_patterns_refs:
+      - "dates.mm_dd_yyyy_dot_optional"
+      - "dates.dd_mon_yyyy_dash"
+    time_patterns_refs:
+      - "times.hh_mm_24_hour"
+    work_time_pattern_ref: "work_times.decimal_or_integer"
+    work_time_condition: "date_present"
+    total_type: "fortnightly"
+    total_location: "end_string_no_times"
+    total_pattern_ref: "totals.two_three_digit_end_string"

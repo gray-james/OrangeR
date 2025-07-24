@@ -1,0 +1,315 @@
+#' @title Extract Daily Timesheet Data (Hybrid Approach)
+#' @description Extracts daily timesheet information (dates, times, names, work hours)
+#'   from a data frame using a hybrid approach combining vectorized operations
+#'   and conditional row-by-row logic based on a provided configuration.
+#'   This function is designed to be flexible and adaptable to different timesheet
+#'   formats by leveraging dynamic configuration.
+#'
+#' @param df A data frame containing a 'concatenated_text' column from which
+#'   information will be extracted. This data frame should ideally be pre-processed
+#'   to combine relevant text fields into a single column.
+#' @param group_config A list containing the configuration for the specific
+#'   timesheet group, typically loaded from a YAML file. This configuration
+#'   should include patterns for date, time, name, and work time extraction,
+#'   as well as any conditional rules.
+#'
+#' @return A data frame with new columns added for extracted information:
+#'   'extracted_name', 'extracted_date', 'extracted_clock_in',
+#'   'extracted_clock_out', and 'work_time'.
+#' @author James Gray
+#' @export
+#'
+#' @examples
+#' # Assuming 'my_data' is a data frame with a 'concatenated_text' column
+#' # and 'my_group_config' is a loaded configuration list for a specific group.
+#' # processed_data <- extract_timesheet_info_hybrid(my_data, my_group_config)
+#'
+#' # For parallel processing, consider using a framework like `furrr` or `parallel`
+#' # to apply this function across chunks of your data.
+#' # For example, with `furrr`:
+#' # library(furrr)
+#' # plan(multisession, workers = 4) # Set up parallel backend
+#' # processed_data_parallel <- future_map_dfr(data_chunks, ~extract_timesheet_info_hybrid(., my_group_config))
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# HYBRID EXTRACTION APPROACH ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+extract_timesheet_info_hybrid <- function(df, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df),
+                          msg = "Input data frame must contain a 'concatenated_text' column.")
+  assertthat::assert_that(assertthat::is.list(group_config),
+                          msg = "group_config must be a list.")
+
+  # Initialize output columns using vectorized approach
+  df <- df %>%
+    dplyr::mutate(
+      extracted_name = NA_character_,
+      extracted_date = NA_character_,
+      extracted_clock_in = NA_character_,
+      extracted_clock_out = NA_character_,
+      work_time = NA_character_
+    )
+
+  # Use vectorized extraction where possible
+  df <- extract_dates_vectorized(df, group_config)
+  df <- extract_times_vectorized(df, group_config)
+
+  # Use for loop for complex conditional name extraction
+  df <- extract_names(df, group_config)
+
+  # Use conditional logic for work time
+  df <- extract_work_time_conditional(df, group_config)
+
+  return(df)
+}
+
+# ----
+
+#' @title Vectorized Date Extraction
+#' @description Extracts dates from the 'concatenated_text' column using configured
+#'   date patterns. This function attempts to apply each pattern until a date is found.
+#'
+#' @param df A data frame with a 'concatenated_text' column.
+#' @param group_config A list containing date patterns under `group_config$date_patterns`.
+#'
+#' @return The input data frame with an 'extracted_date' column populated.
+#' @author James Gray
+extract_dates_vectorized <- function(df, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df))
+  assertthat::assert_that("date_patterns" %in% names(group_config),
+                          msg = "group_config must contain 'date_patterns'.")
+  assertthat::assert_that(assertthat::is.character(group_config$date_patterns),
+                          msg = "group_config$date_patterns must be a character vector.")
+
+  # Try each date pattern until one matches
+  for (pattern in group_config$date_patterns) {
+    date_found <- stringr::str_extract(df$concatenated_text, pattern)
+    df$extracted_date <- dplyr::case_when(
+      is.na(df$extracted_date) & !is.na(date_found) ~ date_found,
+      TRUE ~ df$extracted_date
+    )
+  }
+  return(df)
+}
+
+# ----
+
+#' @title Vectorized Time Extraction with Conditional Logic
+#' @description Extracts clock-in and clock-out times from the 'concatenated_text'
+#'   column. Includes conditional logic to handle cases where time extraction
+#'   depends on the presence of a date in the same string (e.g., for specific groups).
+#'
+#' @param df A data frame with a 'concatenated_text' column.
+#' @param group_config A list containing time patterns under `group_config$time_patterns`
+#'   and an optional `time_extraction_condition`.
+#'
+#' @return The input data frame with 'extracted_clock_in' and 'extracted_clock_out'
+#'   columns populated.
+#' @author James Gray
+extract_times_vectorized <- function(df, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df))
+  assertthat::assert_that("time_patterns" %in% names(group_config),
+                          msg = "group_config must contain 'time_patterns'.")
+  assertthat::assert_that(assertthat::is.character(group_config$time_patterns),
+                          msg = "group_config$time_patterns must be a character vector.")
+
+  # Check if this group has time extraction conditions (e.g., 'date_present')
+  if ("time_extraction_condition" %in% names(group_config) &&
+      group_config$time_extraction_condition == "date_present") {
+    # Only extract times if date is present in the same string (row-by-row logic)
+    for (pattern in group_config$time_patterns) {
+      for (i in seq_len(nrow(df))) {
+        text <- df$concatenated_text[i]
+        if (is.na(text)) next
+
+        # Check if this string contains a date using configured date patterns
+        has_date <- any(sapply(group_config$date_patterns, function(dp) stringr::str_detect(text, dp)))
+
+        if (has_date) {
+          # Extract times only if date is present
+          times_list <- stringr::str_extract_all(text, pattern)[[1]]
+
+          if (is.na(df$extracted_clock_in[i]) && length(times_list) >= 1) {
+            df$extracted_clock_in[i] <- times_list[1]
+          }
+          if (is.na(df$extracted_clock_out[i]) && length(times_list) >= 2) {
+            df$extracted_clock_out[i] <- times_list[2]
+          }
+        }
+      }
+    }
+  } else {
+    # Standard time extraction (vectorized)
+    for (pattern in group_config$time_patterns) {
+      # Extract all times, then assign first two to extracted_clock_in and extracted_clock_out
+      times_list <- stringr::str_extract_all(df$concatenated_text, pattern)
+
+      df$extracted_clock_in <- dplyr::case_when(
+        is.na(df$extracted_clock_in) & lengths(times_list) >= 1 ~ sapply(times_list, function(x) if(length(x) >= 1) x[1] else NA_character_),
+        TRUE ~ df$extracted_clock_in
+      )
+
+      df$extracted_clock_out <- dplyr::case_when(
+        is.na(df$extracted_clock_out) & lengths(times_list) >= 2 ~ sapply(times_list, function(x) if(length(x) >= 2) x[2] else NA_character_),
+        TRUE ~ df$extracted_clock_out
+      )
+    }
+  }
+  return(df)
+}
+
+# ----
+
+#' @title Extract Names (Conditional)
+#' @description Extracts employee names based on configured rules, which can include
+#'   vectorized patterns or complex conditional logic requiring row-by-row processing.
+#'
+#' @param df A data frame with a 'concatenated_text' column and potentially
+#'   an 'extracted_date' column.
+#' @param group_config A list containing name extraction rules under
+#'   `group_config$name_extraction_rules`.
+#'
+#' @return The input data frame with an 'extracted_name' column populated.
+#' @author James Gray
+extract_names <- function(df, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df))
+  assertthat::assert_that("name_extraction_rules" %in% names(group_config),
+                          msg = "group_config must contain 'name_extraction_rules'.")
+  assertthat::assert_that("type" %in% names(group_config$name_extraction_rules),
+                          msg = "name_extraction_rules must contain 'type'.")
+
+  if (group_config$name_extraction_rules$type == "before_date") {
+    # Vectorized logic for names appearing before a date pattern
+    assertthat::assert_that("date_pattern" %in% names(group_config$name_extraction_rules),
+                            msg = "name_extraction_rules type 'before_date' requires 'date_pattern'.")
+    date_pattern <- group_config$name_extraction_rules$date_pattern
+    name_parts <- stringr::str_extract(df$concatenated_text, paste0("^(.*?)(?=", date_pattern, ")"))
+    df$extracted_name <- stringr::str_trim(name_parts)
+
+  } else if (group_config$name_extraction_rules$type == "complex_conditional") {
+    # Complex logic requiring row-by-row processing
+    for (i in seq_len(nrow(df))) {
+      text <- df$concatenated_text[i]
+      if (is.na(text) || text == "") next
+
+      name <- extract_conditional_name(text, df$extracted_date[i], group_config)
+      df$extracted_name[i] <- name
+    }
+  }
+
+  return(df)
+}
+
+# ----
+
+#' @title Extract Conditional Name (Helper Function)
+#' @description Helper function to extract names based on a set of complex,
+#'   conditional rules applied to a single text string. This function is typically
+#'   called within a row-by-row iteration.
+#'
+#' @param text A single character string from which to extract the name.
+#' @param date_found An optional character string representing a date found in the text,
+#'   used for conditional name extraction rules.
+#' @param group_config A list containing name extraction rules under
+#'   `group_config$name_extraction_rules` and time patterns under `group_config$time_patterns`.
+#'
+#' @return A character string representing the extracted name, or `NA_character_` if no
+#'   rule matches.
+#' @author James Gray
+extract_conditional_name <- function(text, date_found = NA_character_, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.character(text), length(text) == 1)
+  assertthat::assert_that(assertthat::is.character(date_found), length(date_found) == 1)
+  assertthat::assert_that("name_extraction_rules" %in% names(group_config),
+                          msg = "group_config must contain 'name_extraction_rules'.")
+  assertthat::assert_that("patterns" %in% names(group_config$name_extraction_rules),
+                          msg = "name_extraction_rules must contain 'patterns'.")
+  assertthat::assert_that(assertthat::is.list(group_config$name_extraction_rules$patterns),
+                          msg = "name_extraction_rules$patterns must be a list.")
+  assertthat::assert_that("time_patterns" %in% names(group_config),
+                          msg = "group_config must contain 'time_patterns'.")
+
+  patterns <- group_config$name_extraction_rules$patterns
+
+  for (pattern_name in names(patterns)){
+    # Rule a: String ends with bracket - name is everything in string unless a date is present
+    if (pattern_name == "ends_with_bracket" && stringr::str_detect(text, "\\)\\s*$") && is.na(date_found)) {
+      return(stringr::str_trim(text))
+    }
+
+    # Rule b: Everything before date (if date present)
+    if (pattern_name == "before_date" && !is.na(date_found)) {
+      # Find position of date and extract everything before it
+      date_pos <- stringr::str_locate(text, stringr::str_escape(date_found))[1]
+      if (!is.na(date_pos) && date_pos > 1) {
+        name_part <- stringr::str_sub(text, 1, date_pos - 1)
+        return(stringr::str_trim(name_part))
+      }
+    }
+
+    # Rule c: If no time present, when string ends with number, name is everything before number
+    time_pattern_regex <- paste(group_config$time_patterns, collapse = "|")
+    has_time <- stringr::str_detect(text, time_pattern_regex)
+
+    if (pattern_name == "before_number_no_time" && !has_time && stringr::str_detect(text, "\\d+(?:\\.\\d+)?\\s*$")) {
+      # Extract everything before the final number
+      name_part <- stringr::str_extract(text, "^(.+?)(?=\\s*\\d+(?:\\.\\d+)?\\s*$)")
+      if (!is.na(name_part)) {
+        return(stringr::str_trim(name_part))
+      }
+    }
+
+    # Rule d: String contains only one word
+    if (pattern_name == "single_word" && stringr::str_detect(text, "^\\s*[A-Za-z]+\\s*$")) {
+      return(stringr::str_trim(text))
+    }
+  }
+
+  # If no rules match, return NA
+  return(NA_character_)
+}
+
+# ----
+
+#' @title Conditional Work Time Extraction
+#' @description Extracts work time based on configured patterns and conditional rules.
+#'   For some groups, work time extraction might depend on the presence of a date.
+#'
+#' @param df A data frame with a 'concatenated_text' column and potentially
+#'   an 'extracted_date' column.
+#' @param group_config A list containing the work time pattern under
+#'   `group_config$work_time_pattern` and an optional `work_time_condition`.
+#'
+#' @return The input data frame with a 'work_time' column populated.
+#' @author James Gray
+extract_work_time_conditional <- function(df, group_config) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df))
+  assertthat::assert_that("work_time_pattern" %in% names(group_config),
+                          msg = "group_config must contain 'work_time_pattern'.")
+  assertthat::assert_that(assertthat::is.character(group_config$work_time_pattern), length(group_config$work_time_pattern) == 1,
+                          msg = "group_config$work_time_pattern must be a single character string.")
+
+  if ("work_time_condition" %in% names(group_config) && group_config$work_time_condition == "date_present") {
+    # Only extract work time if date is present
+    work_times <- stringr::str_extract(df$concatenated_text, group_config$work_time_pattern)
+    df$work_time <- dplyr::case_when(
+      !is.na(df$extracted_date) & !is.na(work_times) ~ work_times,
+      TRUE ~ df$work_time
+    )
+  } else {
+    # Default behavior (vectorized)
+    df$work_time <- stringr::str_extract(df$concatenated_text, group_config$work_time_pattern)
+  }
+
+  return(df)
+}

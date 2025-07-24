@@ -1,0 +1,58 @@
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NAME CLEANING ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FIXME
+clean_names <- function(data, group_number = 1) {
+  data$cleaned_name <- data$extracted_name
+  
+  if (group_number == 2) {
+    # Enhanced cleaning for Group 2's inconsistent names
+    data$cleaned_name <- clean_group2_names(data$cleaned_name)
+  } else {
+    # Standard cleaning for Group 1
+    data$cleaned_name <- clean_standard_names(data$cleaned_name)
+  }
+  
+  return(data)
+}
+# FIXME 
+clean_standard_names <- function(names) {
+  # Original Group 1 cleaning logic
+  names <- str_replace_all(names, "[^A-Za-z\\s,.-]", "")
+  names <- str_replace_all(names, "\\s+", " ")
+  names <- str_trim(names)
+  names <- str_to_title(names)
+  
+  # Handle Last, First format
+  names <- ifelse(
+    str_detect(names, ","),
+    str_replace(names, "^([^,]+),\\s*(.+)$", "\\2 \\1"),
+    names
+  )
+  
+  names[names == "" | is.na(names)] <- NA_character_
+  return(names)
+}
+# FIXME 
+clean_group2_names <- function(names) {
+  # More aggressive cleaning for Group 2's highly inconsistent names
+  # Remove OCR artifacts more aggressively
+  names <- str_replace_all(names, "[^A-Za-z\\s,.-]", " ")
+  names <- str_replace_all(names, "\\s+", " ")
+  names <- str_trim(names)
+  
+  # Remove very short "names" that are likely OCR errors
+  names <- ifelse(nchar(names) < 2, NA_character_, names)
+  
+  # Convert to title case
+  names <- str_to_title(names)
+  
+  # Handle common OCR substitutions
+  names <- str_replace_all(names, "\\b0\\b", "O")  # Zero to O
+  names <- str_replace_all(names, "\\b1\\b", "I")  # One to I
+  
+  names[names == "" | is.na(names)] <- NA_character_
+  return(names)
+}

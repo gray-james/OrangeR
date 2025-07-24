@@ -1,0 +1,61 @@
+finalize_data_types <- function(data, config) {
+  # Enhanced date parsing for different formats
+  if (config$date_patterns[1] == "(\\d{1,2}.{1}[A-Za-z]{3}.{1}\\d{2})") {
+    # Group 2: Handle flexible separators in dates like "7-Nov-21" or "7_Nov_21"
+    data$cleaned_date <- parse_date_time(data$extracted_date,
+                                         orders = c("dby", "dbY", "d by", "d bY"),
+                                         quiet = TRUE)
+  }
+
+  else {
+    # Group 1: Original date parsing
+    data$cleaned_date <- parse_date_time(str_extract(data$extracted_date,"\\d{2}/\\d{2}/\\d{2}"),
+                                         orders = c("dmy"),
+                                         quiet = TRUE)
+  }
+
+  # Time parsing based on format
+  if (str_detect(config$time_patterns[1], "AP")) {
+    # 12-hour format (Group 1)
+    valid_clock_in <- !is.na(data$clock_in)
+
+    valid_clock_out <- !is.na(data$clock_out)
+
+    data$clock_in_time <- if_else(valid_clock_in, parse_date_time(data$clock_in,
+                                                                  orders = c("HMS p", "HM p"),
+                                                                  quiet = TRUE), as.POSIXct(NA)) %>%
+      {as.POSIXct(paste(format(data$cleaned_date, "%Y-%m-%d"), format(., "%H:%M:%S"))) }
+
+    data$clock_out_time <- if_else(valid_clock_out, parse_date_time(data$clock_out,
+                                                                    orders = c("HMS p", "HM p"),
+                                                                    quiet = TRUE), as.POSIXct(NA)) %>%
+      {as.POSIXct(paste(format(data$cleaned_date, "%Y-%m-%d"), format(., "%H:%M:%S"))) }
+  } else {
+    # 24-hour format (Group 2-3)
+    valid_clock_in <- !is.na(data$clock_in)
+
+    valid_clock_out <- !is.na(data$clock_out)
+
+    data$clock_in_time <- if_else(valid_clock_in, parse_date_time(data$clock_in,
+                                                                  orders = c("HM", "HMS"),
+                                                                  quiet = TRUE), as.POSIXct(NA))%>%
+      {as.POSIXct(paste(format(data$cleaned_date, "%Y-%m-%d"), format(., "%H:%M:%S"))) }
+
+    data$clock_out_time <- if_else(valid_clock_out,parse_date_time(data$clock_out,
+                                                                   orders = c("HM", "HMS"),
+                                                                   quiet = TRUE), as.POSIXct(NA)) %>%
+      {as.POSIXct(paste(format(data$cleaned_date, "%Y-%m-%d"), format(., "%H:%M:%S"))) }
+  }
+
+  # Convert work time to numeric
+  data$work_hours_numeric <- as.numeric(data$work_time)
+
+  # Calculate duration if both times are available
+  data$calculated_duration <- ifelse(
+    !is.na(data$clock_in_time) & !is.na(data$clock_out_time),
+    as.numeric(difftime(data$clock_out_time, data$clock_in_time, units = "hours")),
+    NA_real_
+  )
+
+  return(data)
+}

@@ -1,0 +1,54 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# STEP 3: DATE SPILLOVER ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# FIXME Enhanced date spillover handling with Group 3 time condition
+fix_date_spillovers <- function(data, config) {
+  # Use first date pattern for spillover detection
+  date_pattern <- config$date_patterns[1]
+  
+  for (i in 1:(nrow(data) - 1)) {
+    current_row <- data[i, ]
+    next_row <- data[i + 1, ]
+    
+    #Name present, no date, stuff in next line
+    if (!is.na(current_row$extracted_name) && 
+        is.na(current_row$extracted_date) &&
+        !is.na(next_row$concatenated_text)) {
+      
+      # Check if next row starts with a date pattern
+      date_match <- str_extract(next_row$concatenated_text, paste0("^\\s*(", date_pattern, ")"))
+      
+      if (!is.na(date_match)) {
+        data$extracted_date[i] <- str_trim(str_extract(date_match, date_pattern))
+        
+        # Extract times from next row using config patterns
+        # For Group 3, only extract times if date is present (which it is in spillover case)
+        extract_times_from_spillover <- TRUE
+        if ("time_extraction_condition" %in% names(config) && 
+            config$time_extraction_condition == "date_present") {
+          # Group 3: Check if the spillover row has a date (it should since we found one)
+          extract_times_from_spillover <- !is.na(date_match)
+        }
+        
+        if (extract_times_from_spillover) {
+          for (time_pattern in config$time_patterns) {
+            times <- str_extract_all(next_row$concatenated_text, time_pattern)[[1]]
+            if (length(times) >= 1) data$extracted_clock_in[i] <- times[1]
+            if (length(times) >= 2) data$extracted_clock_out[i] <- times[2]
+          }
+        }
+        
+        # Extract work time if conditions are met
+        if (config$work_time_condition == "date_present" || is.null(config$work_time_condition)) {
+          work_time_match <- str_extract(next_row$concatenated_text, config$work_time_pattern)
+          if (!is.na(work_time_match)) data$work_time[i] <- work_time_match
+        }
+        
+        data$spillover_row[i + 1] <- TRUE
+      }
+    }
+  }
+  
+  return(data)
+}

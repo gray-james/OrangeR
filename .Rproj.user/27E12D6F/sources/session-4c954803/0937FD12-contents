@@ -1,0 +1,46 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CONSTANTS (Change Paths) ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+setwd("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R")
+
+# PATHS ----
+
+raw_time_path <- "C:/Users/JG3288/OneDrive - Corporate Network/Compliance and Enforcement - Orange Supermarkets/02 Data Sources/01 Original Calculations/02 Time"
+
+save_path <- "C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/data-raw"
+
+source_path <- "C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R"
+
+# Might need to Change pattern
+included_scripts <- list.files(path = source_path, pattern = "^[0-6]", full.names = TRUE)
+
+# MATTER SPESFIC EXTRACT ----
+
+groups <- c("Pinnacle Rhodes", "Wentworth Point", "Wolli Creek")
+
+
+
+# INITIALISE GLOBAL VARIABLES ----
+
+file_list <- list.files( path = raw_time_path, pattern="*.pdf$", recursive = TRUE ) # recursive means get all info from subfolders too
+
+raw_folder_groups <- list()
+
+extracted_folder_groups <- list()
+
+cleaned_folder_groups <- list()
+
+QA_folder_groups <- list()
+
+# FIXME MATTER SPESFIC EXPORT  ----
+
+base_file_name <- "ORANGE_OC01 - TIME"
+
+# Single File Export Variables
+dfs_to_export <- c(combined_time_data = data.frame())
+
+sheet_names <- c("time_transformed")
+
+# FIXME Multi File Export Variables (Needs to be a list of a named list of named dfs assert)
+
+grouped_dfs_to_export <- list()

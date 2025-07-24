@@ -1,0 +1,11 @@
+^time\.etl.*$
+^\.Rproj\.user$
+^LICENSE\.md$
+^data-raw$
+^(analysis|data-raw|inst)$
+^azure-pipelines\.yml$
+^\.git$
+^\.gitignore$
+^LICENSE\.md$
+^
+^.*\.Rproj$

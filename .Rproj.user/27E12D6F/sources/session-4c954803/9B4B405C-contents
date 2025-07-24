@@ -1,0 +1,110 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXPORT DATAFRAMES ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+export_single_file <- function(dfs_to_export,base_file_name, save_path,  sheet_names, table_start_row = 11) {
+
+  # List the tables to export
+
+  names(dfs_to_export) <- sheet_names
+
+  wb <- createWorkbook()
+
+  for(name in names(dfs_to_export)){
+    df <- dfs_to_export[[name]]
+    addWorksheet( wb, name ) # Add a worksheet with the name of the data frame
+    writeData( wb, sheet = name, x = df, startRow = table_start_row ) # Write the data frame starting at previously selected start row
+    writeDataTable( wb ,sheet = name, x = df, tableName = paste0(name,"_tbl"),
+                    withFilter = TRUE, headerStyle = createStyle(textDecoration = "bold", halign = "center", valign = "top", wrapText = TRUE),
+                    startRow = table_start_row, # Add table starting row
+                    tableStyle = "TableStyleMedium16")
+
+    # Add custom formatting
+    setRowHeights(wb, sheet = name, rows = table_start_row, heights = 45)
+    date_columns <- grep( "date", colnames(df), ignore.case = TRUE)
+    addStyle(wb, sheet = name, style = createStyle( fontName = "Courier New", fontSize = 10, numFmt = "ddd dd-mmm-yy", textDecoration = "bold" ), cols = date_columns,
+             rows = table_start_row + 1:nrow(df), gridExpand = TRUE)
+    freezePane(wb, sheet = name, firstActiveRow = table_start_row + 1)
+    setColWidths(wb, sheet = name, cols = 1:ncol(df), widths = "auto")
+    showGridLines(wb, sheet = name, showGridLines = FALSE)
+  }
+
+  # Version control
+
+  existing_files <- list.files(path = save_path,
+                               pattern = paste0("^",base_file_name)) # creates a list of files in the folder selected with the same base file name
+
+
+  if (length(existing_files) == 0) {version <- 1} else { # creates the first version
+    version <- max(as.numeric(str_extract(
+      existing_files, "(?<=V\\d{2})\\d{2}"))) + 1} # find the highest number in the list of existing files
+
+  file_name <-  paste0(save_path, base_file_name, "_V", sprintf("%04d", version)," (TRF).xlsx") # creates the file name with the version
+
+  saveWorkbook(wb, file = file_name, overwrite = FALSE)
+
+}
+
+export_multiple_files <- function (grouped_dfs_to_export,base_file_name, folder_save_path,  sheet_names, table_start_row = 11){
+
+
+
+  for (group in names(grouped_dfs_to_export)){
+
+    # Enter the file name you want to save as, without the version number - this will be added automatically later
+
+    save_path <- paste0(folder_save_path,group_name,"/")
+
+    group_name <- str_extract(group,"^[^/]+")
+
+    # Enter the folder where you want to save the file
+
+    dfs_to_export <- grouped_dfs_to_export[[group]]
+
+    group_sheet_names <- paste0(make_clean_names(group_name),sheet_names)
+
+    # List the tables to export
+
+    names(dfs_to_export) <- group_sheet_names
+
+
+    wb <- createWorkbook()
+
+    for(name in names(dfs_to_export)){
+      df <- dfs_to_export[[name]]
+      addWorksheet( wb, name ) # Add a worksheet with the name of the data frame
+      writeData( wb, sheet = name, x = df, startRow = table_start_row ) # Write the data frame starting at previously selected start row
+      writeDataTable( wb ,sheet = name, x = df, tableName = paste0(name,"_tbl"),
+                      withFilter = TRUE, headerStyle = createStyle(textDecoration = "bold", halign = "center", valign = "top", wrapText = TRUE),
+                      startRow = table_start_row, # Add table starting row
+                      tableStyle = "TableStyleMedium16")
+
+      # Add custom formatting
+      setRowHeights(wb, sheet = name, rows = table_start_row, heights = 45)
+      date_columns <- grep( "date", colnames(df), ignore.case = TRUE)
+      addStyle(wb, sheet = name, style = createStyle( fontName = "Courier New", fontSize = 10, numFmt = "ddd dd-mmm-yy", textDecoration = "bold" ), cols = date_columns,
+               rows = table_start_row + 1:nrow(df), gridExpand = TRUE)
+      freezePane(wb, sheet = name, firstActiveRow = table_start_row + 1)
+      setColWidths(wb, sheet = name, cols = 1:ncol(df), widths = "auto")
+      showGridLines(wb, sheet = name, showGridLines = FALSE)
+    }
+
+    # Version control
+
+    existing_files <- list.files(path = save_path,
+                                 pattern = paste0("_",group_name," \\(TRF\\)\\.xlsx$"),
+                                 recursive = TRUE) # creates a list of files in the folder selected with the same base file name
+
+
+    if (length(existing_files) == 0) {version <- 1} else { # creates the first version
+      version <- max(as.numeric(str_extract(
+        existing_files, "(?<=V\\d{2})\\d{2}"))) + 1} # find the highest number in the list of existing files
+
+    file_name <-  paste0(save_path, base_file_name, "_V", sprintf("%04d", version),"_",group_name," (TRF).xlsx") # creates the file name with the version
+
+    saveWorkbook(wb, file = file_name, overwrite = FALSE)
+
+  }
+}
+

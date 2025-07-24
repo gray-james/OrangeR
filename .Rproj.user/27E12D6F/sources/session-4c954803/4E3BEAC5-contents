@@ -1,0 +1,289 @@
+
+
+suppressWarnings(
+  suppressPackageStartupMessages({
+  library(pdftools, quietly = TRUE, warn.conflicts = FALSE)
+  library(stringr, quietly = TRUE, warn.conflicts = FALSE)
+  library(tidyr, quietly = TRUE, warn.conflicts = FALSE)
+  library(dplyr, quietly = TRUE, warn.conflicts = FALSE)
+  library(clipr, quietly = TRUE, warn.conflicts = FALSE)
+  library(lubridate, quietly = TRUE, warn.conflicts = FALSE)
+  library(future, quietly = TRUE, warn.conflicts = FALSE)
+  library(backports, quietly = TRUE, warn.conflicts = FALSE)
+  library(janitor, quietly = TRUE, warn.conflicts = FALSE)
+  library(fs, quietly = TRUE, warn.conflicts = FALSE)
+  library(purrr, quietly = TRUE, warn.conflicts = FALSE)
+  })
+)
+
+options(
+  stringsAsFactors = FALSE,
+  prompt = "CalcTeam_JG🦅>",
+  continue = "🙈--"
+)
+
+
+# -----------------------------------------------------------------------------
+# ADVANCED UTILITY & PROJECT SUITE LOADER
+#
+# Description:
+# This script provides a suite of advanced utility functions and also discovers
+# and loads all custom R scripts within the project's `/R` directory.
+# This makes the entire project's functionality available on demand.
+#
+# To use, add the following line to your ~/.Rprofile file:
+# source("/Users/jamesgray/Desktop/Kapha/Bonfire/external-projects/FWO/OrangeR/rprofile_utils.R")
+#
+# Author: James Gray
+# Version: 2.0.0
+# -----------------------------------------------------------------------------
+
+# --- Core: Package Management ---
+.ensure_packages <- function(packages) {
+  new_packages <- packages[!(packages %in% installed.packages()[, "Package"])]
+  if (length(new_packages) > 0) {
+    message("Installing missing packages: ", paste(new_packages, collapse = ", "))
+    install.packages(new_packages, method = "wininet")
+  }
+  suppressPackageStartupMessages(sapply(packages, require, character.only = TRUE))
+}
+
+# --- Section 1: Project Suite Management ---
+
+if (!exists("load_project_suite")) {
+  #' Load All Project R Scripts
+  #'
+  #' Discovers and sources all `.R` files within a specified project directory,
+  #' making all project-specific functions available in the global environment.
+  #'
+  #' @param project_dir The root directory of the project. Defaults to the
+  #'   directory where this script resides.
+  #' @return Invisibly returns a character vector of the sourced script paths.
+  #' @author James Gray
+  load_project_suite <- function(project_dir = NULL) {
+    if (is.null(project_dir)) {
+      # Assumes this script is in the project root
+      project_dir <- dirname(sys.frame(1)$ofile)
+    }
+    r_dir <- file.path(project_dir, "R")
+    if (!dir.exists(r_dir)) {
+      warning("Project 'R' directory not found. No scripts were loaded.")
+      return(invisible(character(0)))
+    }
+
+    scripts_to_source <- list.files(r_dir, pattern = "\\.R$", recursive = TRUE, full.names = TRUE)
+    if (length(scripts_to_source) > 0) {
+      sapply(scripts_to_source, source)
+      message("Successfully loaded ", length(scripts_to_source), " project scripts from: ", r_dir)
+      return(invisible(scripts_to_source))
+    } else {
+      message("No .R scripts found in the project's 'R' directory.")
+      return(invisible(character(0)))
+    }
+  }
+}
+
+# --- Section 2: Data Cleaning & Validation ---
+
+if (!exists("validate_schema")) {
+  #' Validate and Transform a Data Frame Against a Schema
+  #'
+  #' Checks a data frame against a schema defined in a YAML file. It attempts
+  #' to rename columns based on aliases and regex patterns and validates data types.
+  #'
+  #' @param df The data frame to validate.
+  #' @param schema_path The file path to the YAML schema definition.
+  #' @return A transformed data frame with renamed columns and a validation report
+  #'   as an attribute.
+  #' @author James Gray
+  validate_schema <- function(df, schema_path) {
+    .ensure_packages(c("assertthat", "yaml", "dplyr", "stringr"))
+
+    assertthat::assert_that(is.data.frame(df), file.exists(schema_path))
+    schema <- yaml::read_yaml(schema_path)$schema
+    original_names <- names(df)
+    transformed_names <- original_names
+    found_cols <- c()
+
+    # Rename columns based on schema
+    for (col_name in names(schema)) {
+      spec <- schema[[col_name]]
+      current_names <- names(df)
+
+      # Find a match in the current df names
+      match_idx <- which(current_names %in% c(col_name, spec$aliases) | stringr::str_detect(current_names, spec$pattern))
+
+      if (length(match_idx) > 0) {
+        names(df)[match_idx[1]] <- col_name # Rename to canonical name
+        found_cols <- c(found_cols, col_name)
+      }
+    }
+
+    # Validation Report
+    required_cols <- names(schema)[sapply(schema, `[[`, "required")]
+    missing_cols <- setdiff(required_cols, found_cols)
+    coverage <- (length(required_cols) - length(missing_cols)) / length(required_cols)
+
+    report <- list(
+      coverage_percent = scales::percent(coverage),
+      found_columns = found_cols,
+      missing_required_columns = missing_cols,
+      unmapped_original_columns = setdiff(original_names, names(df))
+    )
+
+    message("Schema validation complete. Coverage: ", report$coverage_percent)
+    attr(df, "validation_report") <- report
+    return(df)
+  }
+}
+
+if (!exists("normalize_text_column")) {
+  #' Normalize a Text Column
+  #'
+  #' Cleans a character column by trimming whitespace, removing extra spaces,
+  #' and converting text to a specified case.
+  #'
+  #' @param df A data frame.
+  #' @param column The name of the character column to normalize.
+  #' @param case A string: "title", "lower", "upper".
+  #' @return The data frame with the normalized column.
+  #' @author James Gray
+  normalize_text_column <- function(df, column, case = "title") {
+    .ensure_packages(c("assertthat", "dplyr", "stringr"))
+    col_quo <- rlang::enquo(column)
+
+    case_fun <- switch(case,
+                       "title" = stringr::str_to_title,
+                       "lower" = stringr::str_to_lower,
+                       "upper" = stringr::str_to_upper,
+                       stop("Invalid case specified.")
+    )
+
+    df %>%
+      dplyr::mutate(!!col_quo := case_fun(stringr::str_squish(!!col_quo)))
+  }
+}
+
+# --- Section 3: Configuration & Workflow Management ---
+
+if (!exists("load_config")) {
+  #' Load and Validate a YAML Configuration File
+  #'
+  #' @param config_path Path to the YAML file.
+  #' @param required_keys A character vector of keys that must exist.
+  #' @return A list representing the YAML content.
+  #' @author James Gray
+  load_config <- function(config_path, required_keys = NULL) {
+    .ensure_packages(c("assertthat", "yaml"))
+    assertthat::assert_that(file.exists(config_path))
+    config <- yaml::read_yaml(config_path)
+
+    if (!is.null(required_keys)) {
+      assertthat::assert_that(all(required_keys %in% names(config)),
+                              msg = "One or more required keys are missing from the config file.")
+    }
+    return(config)
+  }
+}
+
+if (!exists("run_etl_pipeline")) {
+  #' Run an ETL Pipeline from a Directory of Scripts
+  #'
+  #' Executes R scripts in alphanumeric order, passing a data object between them.
+  #'
+  #' @param dir_path The directory containing the ordered R scripts.
+  #' @param initial_object The initial object to be passed to the first script.
+  #' @return The final object after being processed by all scripts.
+  #' @author James Gray
+  run_etl_pipeline <- function(dir_path, initial_object) {
+    .ensure_packages("assertthat")
+    assertthat::assert_that(dir.exists(dir_path))
+    scripts <- list.files(dir_path, pattern = "\\.R$", full.names = TRUE)
+
+    # Use a temporary environment to pass data
+    pipeline_env <- new.env()
+    pipeline_env$data <- initial_object
+
+    for (script in sort(scripts)) {
+      message("Executing: ", basename(script))
+      source(script, local = pipeline_env)
+    }
+
+    return(pipeline_env$data)
+  }
+}
+# --- Section 3: Configuration & Workflow Management ---
+
+if (!exists("load_config")) {
+  #' Load and Validate a YAML Configuration File
+  #'
+  #' @param config_path Path to the YAML file.
+  #' @param required_keys A character vector of keys that must exist.
+  #' @return A list representing the YAML content.
+  #' @author James Gray
+  load_config <- function(config_path, required_keys = NULL) {
+    .ensure_packages(c("assertthat", "yaml"))
+    assertthat::assert_that(file.exists(config_path))
+    config <- yaml::read_yaml(config_path)
+
+    if (!is.null(required_keys)) {
+      assertthat::assert_that(all(required_keys %in% names(config)),
+                              msg = "One or more required keys are missing from the config file.")
+    }
+    return(config)
+  }
+}
+
+# --- Section 3: Configuration & Workflow Management ---
+
+if (!exists("load_config")) {
+  #' Load and Validate a YAML Configuration File
+  #'
+  #' @param config_path Path to the YAML file.
+  #' @param required_keys A character vector of keys that must exist.
+  #' @return A list representing the YAML content.
+  #' @author James Gray
+  load_config <- function(config_path, required_keys = NULL) {
+    .ensure_packages(c("assertthat", "yaml"))
+    assertthat::assert_that(file.exists(config_path))
+    config <- yaml::read_yaml(config_path)
+
+    if (!is.null(required_keys)) {
+      assertthat::assert_that(all(required_keys %in% names(config)),
+                              msg = "One or more required keys are missing from the config file.")
+    }
+    return(config)
+  }
+}
+
+export_mmd_svg <- function(  mermaid_definition = "
+graph TD;
+    A[Start] --> B{Is it working?};
+    B -- Yes --> C[Great!];
+    B -- No --> D[Check logs];
+    D --> B;
+"){
+
+  if (!requireNamespace("DiagrammeR", quietly = TRUE)) {
+    install.packages("DiagrammeR", method = "wininet")
+  }
+  library(DiagrammeR)
+
+
+  # Define your Mermaid diagram syntax as a string.
+  # Alternatively, you could read this from a .mmd file
+  # using mermaid_definition <- readr::read_file("my_flowchart.mmd")
+
+
+  # Render the Mermaid definition and save it to an SVG file.
+  # The `mermaid()` function creates the diagram object.
+  # The `export_svg()` function saves it to a file.
+  export_svg(mermaid(file), file = "output.svg")
+
+}
+
+
+# The file "output.svg" will be saved in your current working directory.
+# --- Auto-load project suite on source ---
+load_project_suite()
+message("Advanced R utilities (v2) and project suite have been loaded.")

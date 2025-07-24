@@ -1,0 +1,41 @@
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DATA TYPE FINALIZATION ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+finalize_data_types <- function(data, config) {
+  # Enhanced date parsing for different formats
+  
+  data$cleaned_date <- parse_date_time(data$extracted_date, 
+                                       orders = c("aymd", "dby"),
+                                       quiet = TRUE)
+  # Time parsing based on format
+  
+  data$cleaned_clock_in_time <- parse_date_time(paste(data$extracted_clock_in, data$cleaned_date), 
+                                                orders = c("I:M:S p Y-m-d", "H:M Y-m-d"),
+                                                quiet = TRUE)
+  
+  data$cleaned_clock_out_time <- parse_date_time(paste(data$extracted_clock_out, data$cleaned_date), 
+                                                 orders = c("I:M:S p Y-m-d", "H:M Y-m-d"),
+                                                 quiet = TRUE)
+  
+  # Convert work time to numeric
+  data$cleaned_work_hours <- as.numeric(data$work_time)
+  
+  #Next Day correction
+  data$cleaned_cleaned_clock_out_time <- case_when(data$cleaned_clock_out_time < data$cleaned_clock_in_time ~ data$cleaned_clock_out_time + days(1), 
+                                                   TRUE ~ data$cleaned_clock_out_time)
+  
+  # Calculate duration if both times are available
+  data$calculated_duration <- ifelse(
+    !is.na(data$cleaned_clock_in_time) & !is.na(data$cleaned_clock_out_time),
+    as.numeric(difftime(data$cleaned_clock_out_time, data$cleaned_clock_in_time, units = "hours")),
+    NA_real_
+  )
+  
+  #Filter Out Time
+  
+  data <- data %>% filter(!is.na(cleaned_clock_in_time))
+  
+  return(data)
+}

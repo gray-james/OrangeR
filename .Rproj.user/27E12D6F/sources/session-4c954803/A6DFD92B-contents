@@ -1,0 +1,181 @@
+#' @title Extract Pay Period Data (Totals)
+#' @description Extracts total hours or other pay period-level data from a data frame.
+#'   This function primarily leverages a pre-assigned `employee_period_id` to group
+#'   data and extract totals within those defined periods. It also provides a fallback
+#'   option for row-wise extraction if period grouping is not desired or available.
+#'
+#' @param df A data frame containing timesheet data. It must include a
+#'   `concatenated_text` column for extraction, an `employee_period_id` column
+#'   (if `use_pay_period_grouping` is TRUE), and a `data_quality_flags` list-column.
+#' @param group_config A list containing the configuration for the specific
+#'   timesheet group, typically loaded from a YAML file. This configuration
+#'   should include `total_type` (e.g., "weekly", "fortnightly") and `total_pattern`
+#'   (the regex for extracting the total).
+#' @param use_pay_period_grouping Logical. If TRUE (default), the function will
+#'   group data by `employee_period_id` and extract totals within these groups.
+#'   If FALSE, it will perform a row-wise extraction.
+#' @param file_id_col The bare (unquoted) name of the column that identifies the
+#'   source file or data group (e.g., `file_id`). Used for grouping alongside
+#'   `employee_period_id`.
+#'
+#' @return The input data frame with a new column for the extracted total (named
+#'   dynamically based on `total_type`), and potentially updated `data_quality_flags`.
+#' @author James Gray
+#' @export
+#'
+#' @examples
+#' # Assuming 'cleaned_data_with_periods' is a data frame with 'concatenated_text',
+#' # 'employee_period_id', 'file_id', and 'data_quality_flags' columns,
+#' # and 'my_group_config' is a loaded configuration list.
+#' #
+#' # Extract totals using pay period grouping (default):
+#' # processed_data <- extract_pay_period_data(
+#' #   df = cleaned_data_with_periods,
+#' #   group_config = my_group_config,
+#' #   file_id_col = file_id
+#' # )
+#' #
+#' # Extract totals using row-wise logic (no pay period grouping):
+#' # processed_data_rowwise <- extract_pay_period_data(
+#' #   df = cleaned_data_with_periods,
+#' #   group_config = my_group_config,
+#' #   use_pay_period_grouping = FALSE
+#' # )
+#'
+#' # For parallel processing, consider using a framework like `furrr` or `parallel`
+#' # to apply this function across chunks of your data, especially when
+#' # `use_pay_period_grouping` is TRUE, as grouping can be parallelized.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXTRACT PAY PERIOD DATA (TOTALS) ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+extract_pay_period_data <- function(df, group_config, use_pay_period_grouping = TRUE, file_id_col = NULL) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(df))
+  assertthat::assert_that("concatenated_text" %in% names(df),
+                          msg = "Input data frame must contain a 'concatenated_text' column.")
+  assertthat::assert_that("data_quality_flags" %in% names(df) && is.list(df$data_quality_flags),
+                          msg = "Input data frame must contain a 'data_quality_flags' list-column.")
+  assertthat::assert_that(assertthat::is.list(group_config),
+                          msg = "group_config must be a list.")
+  assertthat::assert_that("total_type" %in% names(group_config),
+                          msg = "group_config must contain 'total_type'.")
+  assertthat::assert_that("total_pattern" %in% names(group_config),
+                          msg = "group_config must contain 'total_pattern'.")
+  assertthat::assert_that(assertthat::is.logical(use_pay_period_grouping), length(use_pay_period_grouping) == 1)
+
+  if (use_pay_period_grouping) {
+    assertthat::assert_that("employee_period_id" %in% names(df),
+                            msg = "When use_pay_period_grouping is TRUE, 'employee_period_id' column is required.")
+    if (!is.null(file_id_col)) {
+      assertthat::assert_that(rlang::as_label(rlang::enquo(file_id_col)) %in% names(df),
+                              msg = paste0("Column ", rlang::as_label(rlang::enquo(file_id_col)), " not found in df."))
+    }
+  }
+
+  total_col_name <- paste0("extracted_", group_config$total_type, "_total_hours")
+  df[[total_col_name]] <- NA_real_
+
+  if (use_pay_period_grouping) {
+    # Group by employee_period_id and file_id (if provided) to ensure unique periods
+    grouping_vars <- c("employee_period_id")
+    if (!is.null(file_id_col)) {
+      grouping_vars <- c(grouping_vars, rlang::as_label(rlang::enquo(file_id_col)))
+    }
+
+    df <- df %>%
+      dplyr::group_by(!!!rlang::syms(grouping_vars)) %>%
+      dplyr::mutate(
+        extracted_total = extract_total_for_period(
+          period_df = dplyr::cur_data(),
+          total_pattern = group_config$total_pattern
+        ),
+        # Assign the extracted total to the new column for all rows in the group
+        !!total_col_name := dplyr::first(extracted_total),
+        # Add quality flag if no total was found for the period
+        data_quality_flags = dplyr::case_when(
+          is.na(dplyr::first(extracted_total)) ~ purrr::map(data_quality_flags, ~ c(., "No total found for pay period.")),
+          TRUE ~ data_quality_flags
+        )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(-extracted_total) # Remove temporary column
+
+  } else {
+    # Row-wise extraction
+    df <- df %>%
+      dplyr::mutate(
+        !!total_col_name := extract_total_row_wise(
+          text_col = concatenated_text,
+          total_pattern = group_config$total_pattern
+        )
+      )
+  }
+
+  return(df)
+}
+
+# ----
+
+#' @title Extract Total for a Single Pay Period
+#' @description Helper function to extract a total value from a data frame
+#'   representing a single pay period. It searches the `concatenated_text`
+#'   column for the specified total pattern.
+#'
+#' @param period_df A data frame subset representing a single pay period.
+#'   Must contain a `concatenated_text` column.
+#' @param total_pattern A character string representing the regular expression
+#'   pattern to search for the total.
+#'
+#' @return A numeric value representing the extracted total, or `NA_real_` if
+#'   no total is found or multiple totals are found (in which case a warning
+#'   is added to `data_quality_flags`).
+#' @author James Gray
+extract_total_for_period <- function(period_df, total_pattern) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.data.frame(period_df))
+  assertthat::assert_that("concatenated_text" %in% names(period_df))
+  assertthat::assert_that(assertthat::is.character(total_pattern), length(total_pattern) == 1)
+
+  # Search for the total pattern in all concatenated_text entries within the period
+  all_matches <- unlist(stringr::str_extract_all(period_df$concatenated_text, total_pattern))
+  all_matches <- all_matches[!is.na(all_matches)]
+
+  if (length(all_matches) == 1) {
+    return(as.numeric(all_matches[1]))
+  } else if (length(all_matches) > 1) {
+    # If multiple totals are found, return NA and let the calling function add a flag
+    warning("Multiple total matches found within a single pay period. Returning NA.")
+    return(NA_real_)
+  } else {
+    # No total found
+    return(NA_real_)
+  }
+}
+
+# ----
+
+#' @title Extract Total Row-Wise
+#' @description Helper function to extract a total value from a character vector
+#'   (typically `concatenated_text`) on a row-by-row basis. This is used when
+#'   pay period grouping is not applied.
+#'
+#' @param text_col A character vector (e.g., `df$concatenated_text`) from which
+#'   to extract the total.
+#' @param total_pattern A character string representing the regular expression
+#'   pattern to search for the total.
+#'
+#' @return A numeric vector of extracted totals, with `NA_real_` for rows where
+#'   no total is found.
+#' @author James Gray
+extract_total_row_wise <- function(text_col, total_pattern) {
+  # Input validation
+  assertthat::assert_that(assertthat::is.character(text_col))
+  assertthat::assert_that(assertthat::is.character(total_pattern), length(total_pattern) == 1)
+
+  # Extract the total using the pattern
+  extracted_totals <- stringr::str_extract(text_col, total_pattern)
+
+  # Convert to numeric, coercing NAs where conversion fails
+  return(as.numeric(extracted_totals))
+}

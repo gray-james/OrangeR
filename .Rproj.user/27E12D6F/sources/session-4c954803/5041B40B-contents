@@ -1,0 +1,641 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# type_checking_implementation
+
+In the realm of robust R development, the `checkmate` package stands as
+a sentinel, not just validating your data but providing meticulously
+detailed reports on precisely *where* an input fails. Its power lies not
+in a few specific "error-finding" functions, but in the design of its
+entire assertion suite, where every check is engineered to deliver a
+clear, actionable error message pinpointing the source of the problem.
+
+Let's explore the primary functions used to guard your code, categorized
+by the nature of the check they perform. For each, we'll see an example
+of a faulty input and the exact, informative error `checkmate` provides.
+
+### The Core Assertion Family
+
+The main functions you will use fall into the `assert_*` family. These
+functions are designed to halt execution and throw a descriptive error
+the moment a condition is not met.
+
+------------------------------------------------------------------------
+
+### **1. Type and Class Assertions**
+
+These functions ensure that the input variable is of the expected data
+type or class. This is often the first line of defense in a function.
+
+### `assert_data_frame()`
+
+Checks if an object is a `data.frame`. Its true power comes from
+checking column types and names simultaneously.
+
+-   **Context:** You're writing a function that expects a `data.frame`
+    containing specific columns: a numeric `id` and a character
+    `comment`.
+
+-   **Input with Error:**R
+
+    `input_df <- data.frame(     id = c(1, 2, "3"),  # Error: 'id' is not purely numeric     comment = c("A", "B", "C")   )`
+
+-   **Check & Output:**R
+
+    \`# Load the library library(checkmate)
+
+    \# Define the check assert_data_frame(input_df, col.names = "named")
+    assert_numeric(input_df\$id)\`
+
+    `Error: Assertion on 'input_df$id' failed: Must be of type 'numeric', not 'character'.`
+
+    -   **Analysis:** The error message doesn't just say the data frame
+        is wrong; it directs you to the exact column (`input_df$id`) and
+        explains the type mismatch (`numeric` vs. `character`).
+
+### `assert_numeric()`
+
+Ensures all elements are numeric.
+
+-   **Context:** A calculation requires a vector of numbers.
+
+-   **Input with Error:**R
+
+    `input_vector <- c(10, 25, 50, "75", 100) # Error: Contains a character string`
+
+-   **Check & Output:**R
+
+    `assert_numeric(input_vector)`
+
+    `Error: Assertion on 'input_vector' failed: Must be of type 'numeric', not 'character'.`
+
+### `assert_string()`
+
+Checks for a single string (a character vector of length 1).
+
+-   **Context:** Your function takes a single title for a plot.
+
+-   **Input with Error:**R
+
+    `plot_title <- c("My", "Title") # Error: Not a single string`
+
+-   **Check & Output:**R
+
+    `assert_string(plot_title)`
+
+    `Error: Assertion on 'plot_title' failed: Must be of type 'string' (a character vector of length 1), but is a 'character' vector of length 2.`
+
+    -   **Analysis:** The error clarifies the nuance between a character
+        vector and a "string," pinpointing the length violation.
+
+------------------------------------------------------------------------
+
+### **2. Value and Content Assertions**
+
+These functions inspect the actual values within the variable, checking
+for specific conditions like inclusion in a set, bounds, or the presence
+of missing values.
+
+### `assert_choice()`
+
+Verifies that a value is one of a set of allowed choices.
+
+-   **Context:** A function parameter must be one of several predefined
+    algorithm types.
+
+-   **Input with Error:**R
+
+    `algorithm_type <- "neural_network"   allowed_types <- c("lm", "glm", "random_forest")`
+
+-   **Check & Output:**R
+
+    `assert_choice(algorithm_type, choices = allowed_types)`
+
+    `Error: Assertion on 'algorithm_type' failed: Must be a subset of {'lm','glm','random_forest'}, but is {'neural_network'}.`
+
+    -   **Analysis:** The message is exceptionally clear, showing both
+        the allowed set and the invalid value that was provided.
+
+### `assert_subset()`
+
+A more general version of `assert_choice`, ensuring all elements of a
+vector are present in a set of choices.
+
+-   **Context:** Checking if all column names in a user-provided dataset
+    are valid.
+
+-   **Input with Error:**R
+
+    `user_columns <- c("age", "sex", "income", "location")   valid_columns <- c("age", "sex", "income")`
+
+-   **Check & Output:**R
+
+    `assert_subset(user_columns, choices = valid_columns)`
+
+    `Error: Assertion on 'user_columns' failed: Must be a subset of {'age','sex','income'}. Element 'location' is not in set.`
+
+    -   **Analysis:** `checkmate` doesn't just say the check failed; it
+        identifies the exact problematic element: `'location'`.
+
+### `assert_count()`
+
+Checks for a single non-negative integer.
+
+-   **Context:** A parameter specifies the number of simulation runs.
+
+-   **Input with Error:**R
+
+    `n_simulations <- 10.5 # Error: Not an integer`
+
+-   **Check & Output:**R
+
+    `assert_count(n_simulations)`
+
+    `Error: Assertion on 'n_simulations' failed: Must be of type 'count', but is 10.5.`
+
+------------------------------------------------------------------------
+
+### **3. Attribute and Property Assertions**
+
+These functions check the metadata and structural properties of an
+object, such as its dimensions, length, or names.
+
+### `assert_names()`
+
+Checks the names of a vector, list, or data frame columns.
+
+-   **Context:** You expect an input list to have specific named
+    elements.
+
+-   **Input with Error:**R
+
+    `config <- list(     learning_rate = 0.01,     optimizer = "adam",     activation_fnc = "relu" # Misspelled name   )`
+
+-   **Check & Output:**R
+
+    `assert_names(names(config), must.include = c("learning_rate", "optimizer", "activation_func"))`
+
+    `Error: Assertion on 'names(config)' failed: Must include the element 'activation_func'.`
+
+    -   **Analysis:** This is invaluable for catching typos in
+        configuration objects, directly pointing out the missing name.
+
+### `assert_true()` / `assert_false()`
+
+Checks a logical condition. This is powerful for creating custom,
+complex checks.
+
+-   **Context:** In a political science analysis, you need to ensure the
+    vote percentages in a `data.frame` sum to 100 for each row
+    (precinct).
+
+-   **Input with Error:**R
+
+    `election_data <- data.frame(     precinct = c("A", "B", "C"),     pct_party_A = c(40, 50, 60),     pct_party_B = c(55, 45, 30) # Error: Row C sums to 90   )   # Create a vector of row sums   row_totals <- rowSums(election_data[, c("pct_party_A", "pct_party_B")])`
+
+-   **Check & Output:**RR
+
+    `# Check if all row totals are 100. The error will point to the first failure.   assert_true(all(row_totals == 100))`
+
+    `Error: Assertion on 'all(row_totals == 100)' failed: Must be TRUE.`
+
+    -   **Innovative Approach with `check*` for better error message:**
+        The base `assert_true` is a bit generic. For a more informative
+        error, we can combine it with `check*` functions to find the
+        *index* of the error.
+
+    `# A more advanced check to find the specific failing row   check_sums <- row_totals == 100   if (!all(check_sums)) {     failing_rows <- which(!check_sums)     stop(sprintf("Vote percentages do not sum to 100 in precinct(s): %s",                  paste(election_data$precinct[failing_rows], collapse = ", ")))   }`
+
+    `Error: Vote percentages do not sum to 100 in precinct(s): C`
+
+    -   **Analysis:** This hybrid approach uses `checkmate`'s logic to
+        build a highly specific and context-aware error message,
+        identifying not just that a sum is wrong, but pinpointing the
+        exact precinct (`C`) from the input data that caused the
+        failure.
+
+------------------------------------------------------------------------
+
+### **4. File System Assertions**
+
+These are critical for functions that read from or write to disk.
+
+### `assert_file_exists()`
+
+Ensures a file path points to an existing file.
+
+-   **Context:** A function needs to read a CSV file.
+
+-   **Input with Error:**R
+
+    `data_path <- "data/raw/my_data_2024.csv" # Path does not exist`
+
+-   **Check & Output:**R
+
+    `assert_file_exists(data_path)`
+
+    `Error: Assertion on 'data_path' failed: File 'data/raw/my_data_2024.csv' does not exist.`
+
+    -   **Analysis:** The error is unambiguous, stating the file path it
+        checked and confirming its absence. This prevents cryptic
+        downstream errors from `read.csv` or other file readers.
+
+------------------------------------------------------------------------
+
+### **Synthesis: The `checkmate` Philosophy**
+
+The key takeaway is that `checkmate` integrates error location into the
+very fabric of its assertions. By using the `assert_*` family liberally
+at the beginning of your functions, you create a defensive shield that
+not only rejects invalid inputs but also provides a clear, immediate
+diagnosis of the problem's location and nature. This moves debugging
+from a reactive, forensic exercise to a proactive, preventative one.
+
+### Visual Asset Offer
+
+To help visualize this process, I can create a Mermaid diagram
+illustrating the workflow of a function call passing through a series of
+`checkmate` assertions, showing how an error at any stage halts
+execution and reports the specific failure.
+
+When the goal is not just to validate but to diagnose, you need to move
+beyond fail-fast assertions and generate a detailed, row-level report of
+every single data quality issue. Since performance is not a constraint,
+we can build a comprehensive validator that inspects each row
+individually and appends a precise error message, creating a clear
+"to-do list" for fixing your dataset.
+
+### **Innovative Solution: The Row-Level Error Report**
+
+The traditional `assert_*` approach is designed to stop execution at the
+*first* sign of trouble. To achieve row-level detail, we will instead
+use the `check_*` family of functions, which return `TRUE` on success or
+a character string describing the failure. We can iterate through each
+row, apply a set of rules to each cell, and concatenate all failures
+into a single, informative message for that row.
+
+Here is a reusable R function, `check_rows_detailed`, that implements
+this logic.
+
+R
+
+`#' Generate Row-Level Error Reports #' #' Iterates through a data frame, applies a list of checkmate rules to specified #' columns, and returns a data frame with a new column detailing all failures #' for each row. #' #' @param df The data.frame to check. #' @param rules A named list, where each name corresponds to a column in`df`. #'   Each element is a list of functions that perform a checkmate::check_* call. #' @return A tibble with the original data and an`error_message\`
+column. \#' \#' @examples \#' \# See example usage below.
+check_rows_detailed \<- function(df, rules) { \# Ensure necessary
+packages are loaded if (!requireNamespace("checkmate", quietly = TRUE))
+stop("Please install 'checkmate'") if (!requireNamespace("dplyr",
+quietly = TRUE)) stop("Please install 'dplyr'") if
+(!requireNamespace("purrr", quietly = TRUE)) stop("Please install
+'purrr'")
+
+\# This vector will store the error message for each row error_reports
+\<- character(nrow(df))
+
+\# Iterate through each row of the data frame for (i in
+seq_len(nrow(df))) { row_data \<- df[i, ] row_errors \<- c() \# Store
+all errors found in this specific row
+
+```         
+# For the current row, iterate through the list of rules
+for (col_name in names(rules)) {
+  if (!col_name %in% names(df)) {
+    warning(paste("Rule provided for non-existent column:", col_name))
+    next
+  }
+
+  value_to_check <- row_data[[col_name]]
+  col_rules <- rules[[col_name]]
+
+  # Apply each check function defined for the column
+  check_results <- purrr::map_chr(col_rules, ~ .x(value_to_check))
+
+  # Filter for failures (check_* returns a message string on failure)
+  failures <- check_results[check_results != "TRUE"]
+
+  if (length(failures) > 0) {
+    # Add column context to the error message
+    failures <- paste0(col_name, ": ", failures)
+    row_errors <- c(row_errors, failures)
+  }
+}
+
+# Consolidate all error messages for the row
+if (length(row_errors) > 0) {
+  error_reports[i] <- paste(row_errors, collapse = " | ")
+} else {
+  error_reports[i] <- NA_character_ # No errors found
+}
+```
+
+}
+
+\# Return the original data frame with the error report column appended
+dplyr::bind_cols(df, error_message = error_reports) }\`
+
+### **Data Viz: Applying the Function**
+
+Let's see this function in action. Imagine a dataset of user profiles
+where data integrity is critical.
+
+**1. Define the Rules** First, we define a list of checks for each
+column. We can even include custom checks using anonymous functions.
+
+R
+
+\`library(checkmate)
+
+# Define a set of validation rules for each column
+
+validation_rules \<- list( user_id = list( function(x)
+check_integerish(x, lower = 1) ), status = list( function(x)
+check_choice(x, choices = c("active", "inactive", "pending")) ), age =
+list( function(x) check_count(x), \# Must be a single non-negative
+integer function(x) check_numeric(x, lower = 18, upper = 120) ), email =
+list( function(x) check_string(x), \# Must be a single string
+function(x)
+check_true(grepl("[^type_checking_implementation-222a1fde20f480d5beb9cec61f7f3ad1-1]+\@[\^\@]+\\.[\^\@]{2,}\$",
+x), "Must be a valid email format") ) )\`
+
+[^type_checking_implementation-222a1fde20f480d5beb9cec61f7f3ad1-1]: \^\@
+
+**2. Create Faulty Input Data** Now, we create a sample `data.frame`
+with multiple, distinct errors spread across different rows.
+
+R
+
+`faulty_users <- data.frame(   user_id = c(1, 2, 3, 4, 5),   status = c("active", "pending", "revoked", "active", "inactive"), # Row 3 has an invalid choice   age = c(35, 22, 17, "fifty", 99), # Row 3 is too young; Row 4 is not numeric   email = c("test@test.com", "user@domain.org", "no-at-sign", "another@test.com", "final@user.net"), # Row 3 fails regex   stringsAsFactors = FALSE )`
+
+**3. Generate the Report** Finally, we run our checker.
+
+R
+
+\`error_report_df \<- check_rows_detailed(faulty_users,
+validation_rules)
+
+print(error_report_df)\`
+
+**Output:** The result is the original data with a new `error_message`
+column that pinpoints every failure.
+
+`# A tibble: 5 × 5   user_id status   age   email              error_message     <dbl> <chr>    <chr> <chr>              <chr> 1       1 active   35    test@test.com      NA 2       2 pending  22    user@domain.org    NA 3       3 revoked  17    no-at-sign         status: Must be a subset of {'active','inactive','pending'}, but is {'revoked'} | age: Must be >= 18 | email: Must be TRUE. 4       4 active   fifty another@test.com   age: Must be of type 'count', not 'character'. 5       5 inactive 99    final@user.net     NA`
+
+This output is a powerful diagnostic tool. You can now filter for non-NA
+rows in `error_message` to get a complete list of all records that
+require cleaning, along with the specific reasons for their failure.
+
+### **Traditional Approach: The "Fail-Fast" Contrast**
+
+For comparison, a traditional approach would apply checks to the entire
+columns at once.
+
+R
+
+`tryCatch({   # This will check column types first   assert_data_frame(faulty_users, col.names = "named")   # Then check individual columns. It will stop at the first error it finds.   assert_choice(faulty_users$status, choices = c("active", "inactive", "pending"))   assert_count(faulty_users$age) # This will fail first   # ... other checks would never be reached }, error = function(e) {   print(e$message) })`
+
+**Output of Traditional Method:**
+
+`[1] "Assertion on 'faulty_users$age' failed: Must be of type 'count', not 'character'."`
+
+This approach is faster but fundamentally limited. It only tells you
+about the *first* problem (`age` being a character in row 4) and
+provides no information about the invalid `status` or the malformed
+`email` in row 3, forcing you to fix and re-run iteratively.
+
+### **Synthesis**
+
+By inverting the standard `checkmate` pattern—iterating rows and using
+`check_*` to gather messages instead of `assert_*` to halt—we create a
+far more powerful diagnostic system. This method is perfectly suited for
+data cleaning and validation workflows where the goal is to identify and
+catalogue *all* existing errors in a dataset in one pass. It transforms
+`checkmate` from a simple gatekeeper into a detailed quality assurance
+inspector.
+
+### **Asset Offer**
+
+To further clarify the logic of the `check_rows_detailed` function, I
+can generate a Mermaid diagram that visualizes the control flow: the
+main loop over the rows, the inner loop over the rules for each cell,
+and the conditional logic for collecting and appending error messages.
+
+The goal is to have the detailed row-level check available when needed,
+but not pay the performance penalty when the data is clean.
+
+There isn't a single, standard "magic bullet" package that does this
+automatically, but we can achieve it through elegant programming
+patterns that are standard in software engineering. The key is to
+separate the validation logic from the core function logic.
+
+Here are two powerful, standard strategies to integrate sophisticated
+checking into your functions while managing the performance cost.
+
+### **1. The Decorator Pattern: Separating Concerns**
+
+This is the cleanest, most reusable approach. A "decorator" is a
+function that wraps another function, extending its behavior without
+modifying its source code. We can create a decorator that bolts our
+row-level validation onto any existing function. This avoids cluttering
+your core logic with validation code.
+
+While R doesn't have a built-in decorator syntax like Python, the
+`decorators` package on CRAN provides this functionality.
+
+**Creative Hook:** Think of this as a "validation switch" for your
+functions. You write the function once, and then decide at runtime
+whether to run it with the high-security (but slower) checks enabled.
+
+**Innovative Implementation (`decorators` package)**
+
+First, install the package: `install.packages("decorators")`
+
+Now, let's define our detailed row-checker as a decorator. We'll add a
+control flag, `validate_rows`, to turn it on or off.
+
+R
+
+\`# decorator.R - a file to store our custom decorator
+library(checkmate) library(decorators) library(dplyr)
+
+# 1. The detailed (but slower) row-checking logic from before
+
+check_rows_detailed_internal \<- function(df, rules) { \# (Code for the
+detailed row-checker from the previous response) \# ... returns a data
+frame with an `error_message` column \# For brevity, we assume the
+function is defined as in the prior example. \# Let's create a
+placeholder for it here. error_reports \<- character(nrow(df)) for (i in
+seq_len(nrow(df))) { row_data \<- df[i, ] row_errors \<- c() for
+(col_name in names(rules)) { value_to_check \<- row_data[[col_name]]
+col_rules \<- rules[[col_name]] check_results \<-
+purrr::map_chr(col_rules, \~ .x(value_to_check)) failures \<-
+check_results[check_results != "TRUE"] if (length(failures) \> 0) {
+row_errors \<- c(row_errors, paste0(col_name, ": ", failures)) } } if
+(length(row_errors) \> 0) error_reports[i] \<- paste(row_errors,
+collapse = " \| ") else error_reports[i] \<- NA_character\_ }
+return(dplyr::bind_cols(df, error_message = error_reports)) }
+
+# 2. Define the decorator itself
+
+# This function takes a function `f` as input and returns a new, wrapped function
+
+with_row_validation \<- function(f, rules) { decorate(f, { \# This code
+runs *before* the original function `f` is called. \# We grab the data
+frame argument from the call, assuming it's the first one. .df \<- ..1
+
+```         
+# Get the value of the validation flag from the function call
+# Defaults to FALSE if not provided.
+validate_flag <- .args$validate_rows %||% FALSE
+
+if (isTRUE(validate_flag)) {
+  cat("--> Row-level validation is ON.\n")
+  report <- check_rows_detailed_internal(.df, rules)
+  failing_rows <- report[!is.na(report$error_message), ]
+
+  if (nrow(failing_rows) > 0) {
+    # Instead of proceeding, stop and show the full report.
+    stop(paste("Row-level validation failed. See details:\n",
+               paste(capture.output(print(failing_rows)), collapse = "\n")))
+  }
+}
+
+# If validation is off or passes, proceed to call the original function.
+# We must unset our custom arg so it doesn't get passed to the core function.
+.args$validate_rows <- NULL
+```
+
+}) }\`
+
+**How to Use It with a Pre-existing Function**
+
+Imagine you have this political analysis function:
+
+R
+
+`# Your pre-existing, clean function process_precinct_data_core <- function(df) {   cat("--> Core analysis function is running...\n")   # Complex political calculations happen here...   df %>%     mutate(turnout_estimate = age * 0.8) %>%     head() }`
+
+Now, we "decorate" it to create a new, validation-aware version:
+
+R
+
+\`# Define validation rules rules \<- list(age = list(function(x)
+check_numeric(x, lower = 18)))
+
+# Create the new, enhanced function
+
+process_precinct_data_validated \<-
+with_row_validation(process_precinct_data_core, rules)
+
+# --- RUNNING THE SCRIPT ---
+
+faulty_data \<- data.frame(age = c(30, "invalid", 45))
+
+# 1. Run with validation OFF (default) - fast
+
+process_precinct_data_validated(faulty_data) \# --\> Core analysis
+function is running... \# (Function runs, but produces NAs or errors
+downstream due to bad data)
+
+# 2. Run with validation ON - slower, but safer
+
+process_precinct_data_validated(faulty_data, validate_rows = TRUE) \#
+--\> Row-level validation is ON. \# Error: Row-level validation failed.
+See details: \# age error_message \# invalid age: Must be of type
+'numeric', not 'character'.\`
+
+This pattern is ideal because it keeps your core logic pure and makes
+validation an optional, explicit feature.
+
+### **2. The High-Performance Hybrid Check**
+
+This strategy directly tackles your performance concern by using a
+tiered approach. It's based on the premise that most of the time, your
+data is valid.
+
+-   **Tier 1: The Fast Lane.** Perform highly optimized, vector-level
+    checks on the entire `data.frame`. These `checkmate` functions are
+    written in C and are incredibly fast. They will pass in milliseconds
+    if the data is clean.
+-   **Tier 2: The Diagnostic Lane.** If—and only if—a fast check fails,
+    you then trigger the slower, more detailed row-level report to find
+    out exactly where the problems are.
+
+**Traditional meets Innovative: The Code**
+
+This pattern is built directly into your function but is structured to
+be efficient.
+
+R
+
+\`# A function with a hybrid validation model
+process_precinct_data_hybrid \<- function(df) {
+
+\# --- TIER 1: FAST CHECKS --- \# These are cheap and run on the whole
+vector at once. \# We use check\_\* to get a logical output, not
+assert\_\* to stop. age_is_numeric \<- check_numeric(df$age)
+  status_is_valid <- check_subset(df$status, choices = c("active",
+"inactive"))
+
+\# --- DECISION GATE --- \# If all fast checks pass, run the core logic
+immediately. if (age_is_numeric == TRUE && status_is_valid == TRUE) {
+cat("--\> Fast checks passed. Running core analysis...\n") \# Core logic
+here... return(df %\>% mutate(turnout_estimate = age \* 0.8)) }
+
+\# --- TIER 2: SLOW DIAGNOSTICS --- \# This code only runs if a fast
+check failed. cat("--\> Fast check failed. Initiating detailed row-level
+diagnosis...\n")
+
+rules \<- list( age = list(function(x) check_numeric(x)), status =
+list(function(x) check_subset(x, c("active", "inactive"))) )
+
+\# Run the detailed checker from before report \<-
+check_rows_detailed_internal(df, rules) failing_rows \<-
+report[!is.na(report\$error_message), ]
+
+\# Stop with a highly informative report stop(paste("Input data failed
+validation. See details:\n", paste(capture.output(print(failing_rows)),
+collapse = "\n"))) }\`
+
+**How It Behaves**
+
+R
+
+\`# 1. With clean data - VERY FAST clean_data \<- data.frame(age = c(25,
+40), status = c("active", "inactive"))
+process_precinct_data_hybrid(clean_data) \# --\> Fast checks passed.
+Running core analysis... \# (Returns processed data frame)
+
+# 2. With faulty data - SLOWER, BUT VERY INFORMATIVE
+
+faulty_data \<- data.frame(age = c(30, 55, "sixty"), status =
+c("active", "pending", "inactive"))
+process_precinct_data_hybrid(faulty_data) \# --\> Fast check failed.
+Initiating detailed row-level diagnosis... \# Error: Input data failed
+validation. See details: \# age status error_message \# sixty active
+age: Must be of type 'numeric', not 'character'. \# 55 pending status:
+Must be a subset of {'active','inactive'}. Element 'pending' is not in
+set.\`
+
+### **Synthesis: Which to Choose?**
+
+| Strategy              | Pros                                                                                                               | Cons                                                                                                       | Best For...                                                                                                                                    |
+|------------------|------------------|------------------|------------------|
+| **Decorator Pattern** | **Extremely clean:** Separates validation from function logic. Reusable across many functions.                     | Requires an extra package (`decorators`). Can be slightly less intuitive if you're new to the pattern.     | Building a robust internal package or a suite of analysis scripts where you want consistent, optional validation.                              |
+| **Hybrid Check**      | **Highest Performance:** Incredibly fast for valid data. No external dependencies needed. Logic is self-contained. | **More Boilerplate:** The validation logic lives inside each function, which can lead to code duplication. | Performance-critical scripts where you need the fastest possible execution for valid data, while still demanding detailed errors for bad data. |
+
+Export to Sheets
+
+For your use case, balancing granularity with performance, the **Hybrid
+Check** is likely the most pragmatic and effective solution. It directly
+minimizes runtime for the common case (valid data) while providing the
+deep diagnostics you need for the exceptional case (invalid data), all
+within a self-contained function.
+
+### Visual Asset Offer
+
+I can generate a Mermaid diagram comparing the control flow of these two
+patterns: the Decorator vs. the Hybrid Check. This would visually
+clarify how they decide to execute the core function logic versus the
+validation code.

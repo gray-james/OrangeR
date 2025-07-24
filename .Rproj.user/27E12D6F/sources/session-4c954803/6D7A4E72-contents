@@ -1,0 +1,163 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# HYBRID EXTRACTION APPROACH ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+extract_timesheet_info_hybrid <- function(data, config) {
+  # Initialize output columns using vectorized approach
+  data <- data %>%
+    mutate(
+      extracted_name = NA_character_,
+      extracted_date = NA_character_,
+      extracted_clock_in = NA_character_,
+      extracted_clock_out = NA_character_,
+      work_time = NA_character_
+    )
+  
+  # Use vectorized extraction where possible
+  data <- extract_dates_vectorized(data, config)
+  data <- extract_times_vectorized(data, config)
+  
+  # Use for loop for complex conditional name extraction
+  data <- extract_names(data, config)
+  
+  # Use conditional logic for work time (Group 2 specific)
+  data <- extract_work_time_conditional(data, config)
+  
+  return(data)
+}
+
+# Vectorized date extraction
+extract_dates_vectorized <- function(data, config) {
+  # Try each date pattern until one matches
+  for (pattern in config$date_patterns) {
+    date_found <- str_extract(data$concatenated_text, pattern)
+    data$extracted_date <- ifelse(is.na(data$extracted_date) & !is.na(date_found), 
+                                  date_found, data$extracted_date)
+  }
+  return(data)
+}
+
+# Vectorized time extraction with conditional logic for Group 3
+extract_times_vectorized <- function(data, config) {
+  # Check if this group has time extraction conditions
+  if ("time_extraction_condition" %in% names(config) && 
+      config$time_extraction_condition == "date_present") {
+    # Group 3: Only extract times if date is present in the same string
+    for (pattern in config$time_patterns) {
+      for (i in seq_len(nrow(data))) {
+        text <- data$concatenated_text[i]
+        if (is.na(text)) next
+        
+        # Check if this string contains a date
+        has_date <- any(sapply(config$date_patterns, function(dp) str_detect(text, dp)))
+        
+        if (has_date) {
+          # Extract times only if date is present
+          times_list <- str_extract_all(text, pattern)[[1]]
+          
+          if (is.na(data$extracted_clock_in[i]) && length(times_list) >= 1) {
+            data$extracted_clock_in[i] <- times_list[1]
+          }
+          if (is.na(data$extracted_clock_out[i]) && length(times_list) >= 2) {
+            data$extracted_clock_out[i] <- times_list[2]
+          }
+        }
+      }
+    }
+  } else {
+    # Groups 1 & 2: Standard time extraction
+    for (pattern in config$time_patterns) {
+      # Extract all times, then assign first two to extracted_clock_in and extracted_clock_out
+      times_list <- str_extract_all(data$concatenated_text, pattern)
+      
+      data$extracted_clock_in <- ifelse(is.na(data$extracted_clock_in) & lengths(times_list) >= 1,
+                                        sapply(times_list, function(x) if(length(x) >= 1) x[1] else NA),
+                                        data$extracted_clock_in)
+      
+      data$extracted_clock_out <- ifelse(is.na(data$extracted_clock_out) & lengths(times_list) >= 2,
+                                         sapply(times_list, function(x) if(length(x) >= 2) x[2] else NA),
+                                         data$extracted_clock_out)
+    }
+  }
+  return(data)
+}
+
+# Complex conditional name extraction (FOR LOOP for Group 2 complexity)
+extract_names <- function(data, config) {
+  if (config$name_extraction_rules$type == "before_date") {
+    # Original Group 1 logic - can be vectorized
+    date_pattern <- config$name_extraction_rules$date_pattern
+    name_parts <- str_extract(data$concatenated_text, paste0("^(.*?)(?=", date_pattern, ")"))
+    data$extracted_name <- str_trim(name_parts)
+    
+  } else if (config$name_extraction_rules$type == "complex_conditional") {
+    # Group 2 complex logic - requires FOR LOOP
+    for (i in seq_len(nrow(data))) {
+      text <- data$concatenated_text[i]
+      if (is.na(text) || text == "") next
+      
+      name <- extract_conditional_name(text, data$extracted_date[i], config)
+      data$extracted_name[i] <- name
+    }
+  }
+  
+  return(data)
+}
+
+# Group 2-3 specific name extraction logic
+extract_conditional_name <- function(text, date_found = NA, config) {
+  patterns <- config$name_extraction_rules$patterns
+  
+  for (pattern in names(patterns)){
+    # Rule a: String ends with bracket - name is everything in string unless a date is present
+    if (pattern == "ends_with_bracket" & str_detect(text, "\\)\\s*$") & is.na(date_found)) {
+      return(str_trim(text))
+    }
+    
+    # Rule b: Everything before date (if date present)
+    if (pattern == "before_date" & !is.na(date_found)) {
+      # Find position of date and extract everything before it
+      date_pos <- str_locate(text, str_escape(date_found))[1]
+      if (!is.na(date_pos) && date_pos > 1) {
+        name_part <- str_sub(text, 1, date_pos - 1)
+        return(str_trim(name_part))
+      }
+    }
+    
+    # Rule c: If no time present, when string ends with number, name is everything before number
+    time_pattern <- paste(config$time_patterns, collapse = "|")
+    has_time <- str_detect(text, time_pattern)
+    
+    if (pattern == "before_number_no_time" & !has_time && str_detect(text, "\\d+(?:\\.\\d+)?\\s*$")) {
+      # Extract everything before the final number
+      name_part <- str_extract(text, "^(.+?)(?=\\s*\\d+(?:\\.\\d+)?\\s*$)")
+      if (!is.na(name_part)) {
+        return(str_trim(name_part))
+      }
+    }
+    
+    # Rule d: String contains only one word
+    if (pattern == "single_word" & str_detect(text, "^\\s*[A-Za-z]+\\s*$")) {
+      return(str_trim(text))
+    }
+    
+    # If no rules match, return NA
+    return(NA_character_)
+  }
+  
+}
+
+# Conditional work time extraction
+extract_work_time_conditional <- function(data, config) {
+  if ("work_time_condition" %in% names(config) && config$work_time_condition == "date_present") {
+    # Group 2: Only extract work time if date is present
+    work_times <- str_extract(data$concatenated_text, config$work_time_pattern)
+    data$work_time <- ifelse(!is.na(data$extracted_date) & !is.na(work_times),
+                             work_times, data$work_time)
+  } else {
+    # Default behavior (Group 1)
+    data$work_time <- str_extract(data$concatenated_text, config$work_time_pattern)
+  }
+  
+  return(data)
+}

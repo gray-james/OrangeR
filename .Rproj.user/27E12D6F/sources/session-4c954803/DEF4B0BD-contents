@@ -1,0 +1,23 @@
+
+
+suppressWarnings(
+  suppressPackageStartupMessages({
+  library(pdftools, quietly = TRUE, warn.conflicts = FALSE)
+  library(stringr, quietly = TRUE, warn.conflicts = FALSE)
+  library(tidyr, quietly = TRUE, warn.conflicts = FALSE)
+  library(dplyr, quietly = TRUE, warn.conflicts = FALSE)
+  library(clipr, quietly = TRUE, warn.conflicts = FALSE)
+  library(lubridate, quietly = TRUE, warn.conflicts = FALSE)
+  library(future, quietly = TRUE, warn.conflicts = FALSE)
+  library(backports, quietly = TRUE, warn.conflicts = FALSE)
+  library(janitor, quietly = TRUE, warn.conflicts = FALSE)
+  library(fs, quietly = TRUE, warn.conflicts = FALSE)
+  library(purrr, quietly = TRUE, warn.conflicts = FALSE)
+  })
+)
+
+options(
+  stringsAsFactors = FALSE,
+  prompt = "CalcTeam_JG🦅>",
+  continue = "🙈--"
+)

@@ -1,0 +1,60 @@
+use\_
+
+# OrangeR
+
+<!-- badges: start -->
+
+<!-- badges: end -->
+
+The goal of OrangeR is to ...
+
+## \~/R Script Naming Convention
+
+### First Layer - Groups
+
+0.  Constants
+1.  Extract
+2.  Transform
+3.  Load
+4.  Quality Assurance
+5.  Performance
+6.  Reference
+
+### Second Layer - Subgroups
+
+0_0 - Global Constants (Matter Spesific - Non Technical)
+
+0_1 - Package Config (Matter Spesific - Technical)
+
+1_0 - PDF Reading Unprocessed
+
+1_1 - Data Structuring (Concat and Regex)
+
+2_0 - Data Cleaning (Detecting Data Types and standard string cleaning)
+
+2_1 - Data Imputation (Filling in Missing Values)
+
+3_0 - Final Data Load
+
+### Third Layer - Modules
+
+Unique within subgroup
+
+## Installation
+
+You can install the development version of OrangeR like so:
+
+## 
+
+``` r
+# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(OrangeR)
+## basic example code
+```

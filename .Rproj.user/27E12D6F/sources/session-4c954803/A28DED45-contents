@@ -1,0 +1,134 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FIXME generate_employee_period_id ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  ----
+#' Generate a Sequential ID for Employee Records Within a Group
+#'
+#' This function creates a numeric ID to group records that likely belong to the
+#' same employee within a larger file or group. It is designed for situations
+#' where a reliable, explicit employee identifier is missing or unclean.
+#'
+#' The function assumes that the timesheet data for a single employee appears
+#' in a contiguous block within each file group, sorted chronologically. It
+#' identifies a new employee when the date sequence "resets" (i.e., a date is
+#' earlier than the one preceding it). This approach is robust to missing dates
+#' within an employee's timesheet.
+#'
+#' @author Gemini
+#' @family Data Cleaning Functions
+#' @source This function was developed to handle unclean timesheet data where
+#'   formal identifiers are absent.
+#'
+#' @param df A data frame containing the timesheet data.
+#' @param group_col The name of the column (as a string) that identifies the
+#'   file or data group (e.g., "pdf_name"). This column is used to partition
+#'   the data before generating IDs.
+#' @param date_col The name of the column (as a string) that contains the
+#'   timesheet dates. The data should be of class `Date`.
+#' @param period_days An integer specifying the number of days in the pay period
+#'   (e.g., 14 for fortnightly, 7 for weekly). This parameter is currently reserved
+#'   for future enhancements and validation but establishes the function's intent.
+#'
+#' @return The input data frame with a new integer column named `employee_period_id`.
+#'   This ID is sequential and resets for each new group defined by `group_col`.
+#'
+#' @examples
+#' # Create sample messy timesheet data for two PDF files
+#' sample_data <- data.frame(
+#'   pdf_name = rep(c("file_A.pdf", "file_B.pdf"), each = 20),
+#'   cleaned_date = as.Date(c(
+#'     # --- Employee 1 in File A (missing a date) ---
+#'     "2024-07-01", "2024-07-02", "2024-07-04",
+#'     # --- Employee 2 in File A ---
+#'     "2024-07-01", "2024-07-02", "2024-07-03",
+#'     # --- Some junk data ---
+#'     "2023-01-01",
+#'     # --- Employee 3 in File A (starts after junk) ---
+#'     "2024-07-01", "2024-07-02",
+#'     # --- Some duplicate data ---
+#'     "2024-07-02",
+#'     rep(NA, 10), # Dummy rows to simulate a larger file
+#'     # --- Employee 1 in File B ---
+#'     "2024-08-15", "2024-08-16",
+#'     # --- Employee 2 in File B (short timesheet) ---
+#'     "2024-08-15",
+#'     # --- Employee 3 in File B ---
+#'     "2024-08-15", "2024-08-16", "2024-08-17",
+#'     rep(NA, 14) # Dummy rows
+#'   ))
+#' )
+#'
+#' # Generate IDs for a fortnightly period (14 days)
+#' fortnightly_ids <- generate_employee_period_id(
+#'   df = sample_data,
+#'   group_col = "pdf_name",
+#'   date_col = "cleaned_date",
+#'   period_days = 14
+#' )
+#'
+#' # View the result for the first file
+#' print(head(fortnightly_ids[fortnightly_ids$pdf_name == "file_A.pdf", ], 10))
+#'
+#' # Generate IDs for a weekly period (7 days) - logic is the same
+#' weekly_ids <- generate_employee_period_id(
+#'   df = sample_data,
+#'   group_col = "pdf_name",
+#'   date_col = "cleaned_date",
+#'   period_days = 7
+#' )
+#'
+#' # Create the final, globally unique ID as requested
+#' final_df <- fortnightly_ids %>%
+#'   filter(!is.na(cleaned_date)) %>% # Remove rows where date is NA
+#'   group_by(pdf_name) %>%
+#'   mutate(
+#'     fortnight_start_date = min(cleaned_date),
+#'     final_unique_id = paste(
+#'       pdf_name,
+#'       fortnight_start_date,
+#'       employee_period_id,
+#'       sep = "_"
+#'      )
+#'   ) %>%
+#'   ungroup()
+#'
+#' print(head(final_df, 10))
+#'
+# ----
+generate_employee_period_id <- function(df, group_col, date_col, period_days) {
+  # --- Input Validation ---
+  assert_that(is.data.frame(df))
+  assert_that(is.character(group_col), length(group_col) == 1)
+  assert_that(is.character(date_col), length(date_col) == 1)
+  assert_that(group_col %in% names(df), msg = paste("Column not found:", group_col))
+  assert_that(date_col %in% names(df), msg = paste("Column not found:", date_col))
+  assert_that(is.numeric(period_days), period_days > 0)
+  assert_that(inherits(df[[date_col]], "Date"), msg = paste(date_col, "must be a Date object."))
+
+  # --- ID Generation Logic ---
+  result_df <- df %>%
+    # Arrange by the grouping column first, then by the raw order of rows
+    # to preserve the assumed contiguous blocks of employee data. Then sort by date.
+    # The sorting by date is what allows the lag comparison to work.
+    arrange(.data[[group_col]], .data[[date_col]]) %>%
+    # Group by the specified file/grouping column
+    group_by(.data[[group_col]]) %>%
+    mutate(
+      # The core logic: flag a row as the 'start' of a new employee's records
+      # if its date is less than the previous date within the same group.
+      # The first record in each group is always considered a new start.
+      # lag() gets the value from the previous row.
+      is_new_employee_start = .data[[date_col]] < lag(.data[[date_col]], default = first(.data[[date_col]]) - 1),
+
+      # The employee_period_id is the cumulative sum of the 'start' flags.
+      # This effectively creates a unique, incrementing ID for each block
+      # of records identified as belonging to one employee.
+      employee_period_id = cumsum(is_new_employee_start)
+    ) %>%
+    # Remove the intermediate helper column
+    select(-is_new_employee_start) %>%
+    # Return to the original ungrouped state
+    ungroup()
+
+  return(result_df)
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Technical Progress Update</title>
+</head>
+<body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FFFFFF; font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
+        <tr>
+            <td align="center" style="padding: 24px;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
+                    <!-- Email Header -->
+                    <tr>
+                        <td style="background-color: #004D40; padding: 16px; color: #FFFFFF; font-family: 'Arial Black', sans-serif; font-size: 20pt; text-align: center;">
+                            Project X Progress Update
+                        </td>
+                    </tr>
+                    <!-- Introduction -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Dear Team,
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Here is a summary of our technical progress for the week, structured around our <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">Azure DevOps</code> work items.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 16px;">
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-bottom: 8px;">
+                                We're excited to share our progress using <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">Azure DevOps</code> work items, a structured way to track our development. This approach helps us enhance visibility into our tasks, clarify requirements, and reduce any ambiguities, ultimately streamlining our collaborative efforts.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-bottom: 8px;">
+                                We understand that this might be a new way of looking at project updates for some, and we want to assure you that adopting this functionality, even in its early stages, is designed to be flexible. Everything we set up can be easily modified and refined as we all become more familiar with it. There's no risk of "breaking" anything permanently; it's a learning process we'll navigate together.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                From a technical standpoint, integrating this kind of functionality, whether fully or partially, dramatically streamlines our workflows and fosters more intuitive collaboration. We believe this will significantly benefit the entire team by making our development process more transparent and efficient.
+                            </p>
+                        </td>
+                    </tr>
+                                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">For a visual overview of the work item hierarchy, please refer to the attached <span style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">work_item_hierarchy.svg</span> file. To view it, save the SVG file to your computer and open it with any web browser. This diagram visually represents the relationships between Epics, Features, and User Stories, providing a clear overview of the project's structure. The source Mermaid definition is also attached as <span style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">work_item_hierarchy.mmd</span>.</p>
+                    <!-- Visual Aids Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 0; margin-bottom: 8px;">Visual Aids & Workflow Diagrams</h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-bottom: 16px;">
+                                To provide a clearer understanding of our project structure and development workflows, we've included the following visual aids:
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_WORK_ITEM_HIERARCHY_SVG]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            View Work Item Hierarchy (SVG)
+                                        </a>
+                                    </td>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_PREPROD_WORKFLOW_SVG]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            View Pre-Production Workflow (SVG)
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Pre-Production Branch Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">🚀 Pre-Production Branch Workflow: <span style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</span></h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                To ensure the stability and quality of our core package functionality, we are introducing a <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</code> branch. This branch will serve as a staging area for features that are essential for the initial V1 release of the package.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Features developed for the core functionality will be integrated into the <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</code> branch. Once development is complete, these features will undergo a collaborative assessment with senior analysts. This assessment will be based on predefined criteria to ensure they meet the required standards for inclusion in the V1 package.
+                            </p>
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 16px; margin-bottom: 8px;">Pull Request (PR) Process for <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</code> to <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">main</code></h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Upon successful collaborative assessment and acceptance of features in the <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</code> branch, a Pull Request (PR) will be initiated to merge these changes into the <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">main</code> branch.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                A typical Pull Request for this merge will include:
+                            </p>
+                            <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 0; padding-left: 20px;">
+                                <li><strong>Title:</strong> Clear and concise summary of the changes (e.g., "Merge preProd to main: Core Package V1 Features").</li>
+                                <li><strong>Description:</strong> Detailed explanation of the features being merged, their purpose, and the outcomes of the collaborative assessment. Mention any significant technical decisions or considerations.</li>
+                                <li><strong>Linked Work Items:</strong> References to all relevant Azure DevOps work items (Epics, Features, User Stories) that are part of this merge.</li>
+                                <li><strong>Testing Results:</strong> Summary of unit, integration, and any other relevant testing performed on the <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">preProd</code> branch.</li>
+                                <li><strong>Reviewers:</strong> Designation of appropriate team members for code review, including senior analysts involved in the assessment.</li>
+                                <li><strong>Checklist:</strong> A checklist to ensure all necessary steps (e.g., code style adherence, documentation updates, successful build) have been completed.</li>
+                            </ul>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Once the PR is reviewed and approved, the features will be brought into the <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">main</code> branch, marking the initialization of the first V1 of the package.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Epic Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">🗺️ Epic: <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">etl-time</code> library</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>🎯 Goal/Problem Solved:</strong> ETL of raw time data generalised across matters; Streamlines ETL process, complex transformations less technical.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>Importance:</strong> This epic is crucial for standardizing and simplifying the extraction, transformation, and loading of diverse timesheet data, making complex data handling more accessible and efficient for all users.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Feature 1 Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 0; margin-bottom: 8px;">✨ Feature: Extract</h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>🎯 Goal/Problem Solved:</strong> Provides a generalized solution for extracting semi-structured, row-wise raw data with pre-configured regex patterns.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>⚙️ Key Functionality:</strong> Uses a default pre-configured regex library with decision tree selection to choose patterns, and allows matter-specific configuration of patterns based on different cleaning groups.
+                            </p>
+                            <!-- User Story 1a -->
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                <strong style="color: #009999;">👤 User Story:</strong> <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">extract_daily_data</code>
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Prioritizes vectorized extraction but implements row-wise conditional logic when varied or complex patterns emerge. Includes null percentage comparison compared to indicator variable and other extracted features.
+                            </p>
+                            <div style="background-color: #f8f8f8; border: 1px solid #e0e0e0; padding: 12px; margin-top: 12px;">
+                                <p style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; margin-bottom: 8px;">
+                                    <strong>Technical Details:</strong>
+                                </p>
+                                <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; padding-left: 20px;">
+                                    <li>Acceptance Test: Verify that extracted daily data matches expected output for various input patterns, including edge cases with varied or complex patterns.</li>
+                                    <li>Null percentage comparison ensures data quality and flags potential issues.</li>
+                                </ul>
+                            </div>
+                            <!-- User Story 1b -->
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                <strong style="color: #009999;">👤 User Story:</strong> <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">extract_pay_period</code>
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Utilizes a pre-generated internal <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">period_id</code> to extract data occurring per pay period (or other defined period) by default, with further configuration to specify other match criteria instead.
+                            </p>
+                            <div style="background-color: #f8f8f8; border: 1px solid #e0e0e0; padding: 12px; margin-top: 12px;">
+                                <p style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; margin-bottom: 8px;">
+                                    <strong>Technical Details:</strong>
+                                </p>
+                                <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; padding-left: 20px;">
+                                    <li>Acceptance Test: Confirm correct extraction of pay period data based on `period_id` and alternative match criteria.</li>
+                                    <li>Ensures flexible data extraction for various time-based reporting needs.</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Feature 2 Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 0; margin-bottom: 8px;">✨ Feature: Transform</h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>🎯 Goal/Benefit:</strong> Provides a generalized, configurable solution to clean data (values known from raw but now actionable), impute data (fill in missing values), and characterize data (add IDs).
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>⚙️ Key Functionality:</strong> Offers default, type-strict, and configurable treatment of data.
+                            </p>
+                            <!-- User Story 2a -->
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                <strong style="color: #009999;">👤 User Story:</strong> <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">generate_period_id</code>
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Uses grouping to mark the earliest and latest date such that an ID can be imputed to identify a group which could be used for capture or imputation.
+                            </p>
+                            <div style="background-color: #f8f8f8; border: 1px solid #e0e0e0; padding: 12px; margin-top: 12px;">
+                                <p style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; margin-bottom: 8px;">
+                                    <strong>Technical Details:</strong>
+                                </p>
+                                <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; padding-left: 20px;">
+                                    <li>Acceptance Test: Validate that `period_id` is correctly generated for various grouping scenarios and date ranges.</li>
+                                    <li>Ensures accurate identification of data groups for subsequent processing.</li>
+                                </ul>
+                            </div>
+                            <!-- User Story 2b -->
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                <strong style="color: #009999;">👤 User Story:</strong> <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">clean_names</code>
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Based on configuration, corrects names and removes irregular characters.
+                            </p>
+                            <div style="background-color: #f8f8f8; border: 1px solid #e0e0e0; padding: 12px; margin-top: 12px;">
+                                <p style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; margin-bottom: 8px;">
+                                    <strong>Technical Details:</strong>
+                                </p>
+                                <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; padding-left: 20px;">
+                                    <li>Acceptance Test: Verify that names are cleaned according to specified configurations, handling various irregular characters and edge cases.</li>
+                                    <li>Ensures data consistency and usability for downstream processes.</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Feature 3 Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 0; margin-bottom: 8px;">✨ Feature: Load</h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>🎯 Goal/Benefit:</strong> Allows more seamless integration with current workflows and adds to audit capability for quality assurance methods.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                <strong>⚙️ Key Functionality:</strong> Based on defined pre-configuration, immediately loads data into formats using a portable style config file. Capable of directly piping data without user input into preceding flows or for analysis (e.g., <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">Power BI</code>) with inbuilt snapshot (data version control) capabilities.
+                            </p>
+                            <!-- User Story 3a -->
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                <strong style="color: #009999;">👤 User Story:</strong> <code style="font-family: 'Courier New', monospace; background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; white-space: nowrap;">load_to_excel</code>
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Based on defined default configuration, flexibly allows lightweight functions to load data onto a single file or multiple files on multiple sheets, etc., with minimal mandatory input variables.
+                            </p>
+                            <div style="background-color: #f8f8f8; border: 1px solid #e0e0e0; padding: 12px; margin-top: 12px;">
+                                <p style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; margin-bottom: 8px;">
+                                    <strong>Technical Details:</strong>
+                                </p>
+                                <ul style="color: #000000; font-family: Arial, sans-serif; font-size: 11pt; margin-top: 0; padding-left: 20px;">
+                                    <li>Acceptance Test: Confirm data is loaded correctly to Excel, respecting sheet and file configurations.</li>
+                                    <li>Ensures seamless data export for reporting and analysis.</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Azure DevOps Dashboard & Migration -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">📊 Azure DevOps Integrations</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                We are also setting up an <strong>Azure DevOps Calculations Team Dashboard</strong>, designed for integration directly into Microsoft Teams. This dashboard is currently a proof of concept, fully editable and configurable based on your specific needs. It has been set up to demonstrate core functionality and can be quickly adapted for different Epics (e.g., Matter, Award, Package) with minimal setup time, as all components are prebuilt.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Our proposed simple integration into Teams involves creating a dedicated channel within our <strong>FWO-Compliance Calculations</strong> team for each Epic. Each channel would then host its own dashboard to track progress relevant to that specific Epic.
+                            </p>
+                            <h3 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 14pt; margin-top: 16px; margin-bottom: 8px;">Seamless Backward Compatibility Migration</h3>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Furthermore, we have identified a straightforward backward compatibility migration workflow using <strong>DevOps Office Integration Tools</strong> available on the Company portal. We can provide details on this at a later date.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                This workflow will allow us to very simply migrate our existing resource tracker and matter tracker functionality into Azure DevOps. This means less technical team members can intuitively transfer their understanding of the core functionality for these workflows, as they already conceptually grasp them.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                This also opens up significant scope for enhancements to our current processes. If you are interested, I can elaborate on these potential enhancements in a short report after completing my current priority work.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Conclusion -->
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Add Task Section -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <h2 style="color: #004D40; font-family: 'Arial Black', sans-serif; font-size: 16pt; margin-top: 0; margin-bottom: 8px;">➕ Adding New Tasks in Azure DevOps</h2>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                For those who wish to add new tasks or work items directly, the process is straightforward within the Azure DevOps web interface.
+                            </p>
+                            <table border="0" cellspacing="0" cellpadding="0" style="width: 100%;">
+                                <tr>
+                                    <td align="center" style="padding: 8px;">
+                                        <a href="[AZURE_DEVOPS_LINK_TO_ALL_WORK_ITEMS]" style="display: inline-block; padding: 10px 20px; background-color: #0078D4; color: #FFFFFF; text-decoration: none; border-radius: 5px; font-family: Arial, sans-serif; font-size: 12pt;">
+                                            Go to All Work Items
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt; margin-top: 16px;">
+                                Once on the "Work Items" page, you can click the "+ New Work Item" button and select the type of item you wish to create (e.g., Task, Bug, User Story). Fill in the details and save. It's that simple!
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Conclusion -->
+                    <tr>
+                        <td style="padding: 16px;">
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Please let me know if you have any questions.
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                Best regards,
+                            </p>
+                            <p style="color: #000000; font-family: Arial, sans-serif; font-size: 12pt;">
+                                James Gray
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

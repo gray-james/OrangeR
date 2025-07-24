@@ -1,0 +1,112 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# generate_period_id ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' @title Generate a Unique ID for Each Employee Pay Period
+#' @description This function is the core of the employee data segmentation module.
+#' It takes raw, vertically-structured timesheet data and performs three critical tasks:
+#' 1.  **Identifies Blocks:** It intelligently detects contiguous blocks of records that
+#'     belong to a single employee, even without an explicit ID.
+#' 2.  **Assigns IDs:** It assigns a consistent, sequential `employee_period_id`
+#'     to every row within an identified block.
+#' 3.  **Validates Period:** It checks if the date range for any given block exceeds
+#'     the expected `period_days`, flagging potential data quality issues.
+#'
+#' @section Core Logic:
+#' The function first uses a primary sorting column (`sort_order_col`) to establish
+#' the ground-truth order of records, reflecting their physical layout in the source file.
+#' Within this order, it identifies the start of a new employee's timesheet when the
+#' date sequence resets (i.e., a date is earlier than the one preceding it).
+#' The generated ID is then filled across all rows belonging to that employee's block.
+#'
+#' @author James Gray (JG3288)
+#' @family Data Cleaning Functions
+#'
+#' @param df A data frame containing the timesheet data. It must contain the
+#'   columns specified in `group_col`, `date_col`, and `sort_order_col`, and
+#'   is expected to have a list-column named `data_quality_flags` initialized.
+#' @param group_col The bare (unquoted) name of the column that identifies the
+#'   source file or data group (e.g., `file_id`). Processing is partitioned by this column.
+#' @param date_col The bare (unquoted) name of the column that contains the
+#'   timesheet dates (must be of class `Date`).
+#' @param period_days An integer specifying the expected number of days in a pay period
+#'   (e.g., 14 for fortnightly). This is used for the data quality validation step.
+#' @param sort_order_col The bare (unquoted) name of a numeric column used to define the
+#'   authoritative row order *before* any date-based logic is applied.
+#'
+#' @return The input data frame with two new columns:
+#'   - `employee_period_id`: An integer ID that is consistent for all rows in a block.
+#'   - `data_quality_flags`: The input list-column, now with appended warnings for
+#'     any blocks that violate the `period_days` constraint.
+#'
+#' @importFrom dplyr arrange group_by mutate lag coalesce first if_else ungroup select
+#' @importFrom tidyr fill
+#' @importFrom purrr map
+#' @importFrom assertthat assert_that is.data.frame is.numeric
+#' @export
+#'
+#' @examples
+#' # Create sample data with a reliable line number for sorting
+#' sample_data <- data.frame(
+#'   file_id = "file_A.pdf",
+#'   line_num = 1:11,
+#'   cleaned_date = as.Date(c(
+#'     "2024-07-01", "2024-07-02", "2024-07-04", # Employee 1
+#'     "2024-07-03", "2024-07-05", "2024-07-06", # Employee 2
+#'     "2024-07-20", "2024-07-21", "2024-07-22", # Employee 3 (violates period)
+#'     "2024-07-08", # Employee 4
+#'     NA
+#'   )),
+#'   # Initialize the required list-column for quality flags
+#'   data_quality_flags = I(vector("list", 11))
+#' )
+#'
+#' # Process the data using the new {{}} syntax
+#' result <- identify_and_fill_employee_blocks(
+#'   df = sample_data,
+#'   group_col = file_id,
+#'   date_col = cleaned_date,
+#'   period_days = 14,
+#'   sort_order_col = line_num
+#' )
+#'
+#' print(result)
+# ------------------------------------------------------------------------------
+generate_period_id <- function(df, group_col, date_col, period_days, sort_order_col) {
+  # --- Input Validation ---
+  # Note: No assertion needed for bare column names, {{}} handles it.
+  assertthat::assert_that(is.data.frame(df))
+  assertthat::assert_that("data_quality_flags" %in% names(df) && is.list(df$data_quality_flags))
+  assertthat::assert_that(is.numeric(period_days), period_days > 0)
+
+  # --- Main Logic ---
+  result_df <- df %>%
+    dplyr::arrange({{ group_col }}, {{ sort_order_col }}) %>%
+    dplyr::group_by({{ group_col }}) %>%
+    # Step 1: Identify the start of a new employee block
+    dplyr::mutate(
+      is_new_block_start = dplyr::coalesce({{ date_col }} < dplyr::lag({{ date_col }}), TRUE),
+      temp_block_id = cumsum(is_new_block_start)
+    ) %>%
+    # Step 2: Fill the ID across the entire block
+    dplyr::group_by({{ group_col }}, temp_block_id) %>%
+    tidyr::fill({{ date_col }}, .direction = "downup") %>%
+    dplyr::mutate(
+      employee_period_id = dplyr::first(temp_block_id)
+    ) %>%
+    # Step 3: Validate the date range of the block
+    dplyr::mutate(
+      block_date_range = as.numeric(max({{ date_col }}, na.rm = TRUE) - min({{ date_col }}, na.rm = TRUE)),
+      data_quality_flags = dplyr::if_else(
+        block_date_range > period_days,
+        purrr::map(data_quality_flags, ~ c(., paste("Period length of", block_date_range, "days exceeds expected", period_days, "days."))),
+        data_quality_flags
+      )
+    ) %>%
+    # Ungroup and clean up intermediate columns
+    dplyr::ungroup() %>%
+    dplyr::select(-is_new_block_start, -temp_block_id, -block_date_range) %>%
+    dplyr::arrange({{ sort_order_col }})
+
+  return(result_df)
+}

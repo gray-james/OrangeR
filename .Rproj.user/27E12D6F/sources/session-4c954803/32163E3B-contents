@@ -1,0 +1,66 @@
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# READ PDF TO DF FUNC----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+read_pdf_groups <- function(file_list, groups){
+
+  extract_groups <- list()
+
+  for (group in groups) {
+
+    plan(multisession, workers = detectCores() -2 )
+
+    pattern = paste0("^", group)
+
+    group_name = group
+
+    filter_to_group <- file_list[grepl(pattern, file_list)]
+
+    read_files <- future_lapply( paste0(raw_time_path, "/", filter_to_group), FUN = read_pdf)
+
+    main_tbl <- bind_rows(read_files) %>%
+      mutate(across(where(is.character), ~ na_if(., "")),
+             across(where(is.character), ~ gsub("\u00A0", " ", ., fixed = TRUE))) %>% # this line replaces non-breaking space with space
+      select(where(~!all(is.na(.)))) %>%
+      relocate(page_no, .after = "pdf_name") %>%
+      filter(Col1 != "PDF Error")
+
+    extract_groups[[group_name]] <- main_tbl
+
+    plan(sequential)
+
+  }
+
+  return(extract_groups)
+}
+
+read_pdf <- function(file){
+
+  raw_txt <- tryCatch(pdf_text(file), error = function(e) "PDF Error") # tryCatch skips errors; file is read with tag PDF Error
+
+  df_txt <- data.frame( page = seq( length( raw_txt ) ), raw_txt ) # forming data frame and adding page numbers
+
+  split_txt <- stack( setNames( str_split(df_txt$raw_txt, "[\\r\\n]+"), df_txt$page ) ) # split text by row and space
+
+
+
+  main_tbl_matrix <- str_split_fixed( str_trim( split_txt$values ), "\\s{2,}", 10 )
+
+
+  colnames( main_tbl_matrix ) <- paste0("Col", seq_len(ncol(main_tbl_matrix)))
+
+  index_df <- data.frame(page_no = split_txt$ind, stringsAsFactors = FALSE)
+
+
+  main_tbl <- bind_cols( as.data.frame(main_tbl_matrix, stringsAsFactors = FALSE,), index_df  ) %>% # split into columns where space between items in a row is 2 or more - then bind the index column to last column of new table
+    rename(page_no = last(colnames(.))) %>% # rename the last column to "page_no"
+    mutate(page_no = as.numeric(page_no), # make page numbers numbers not string
+           pdf_name = file) %>% # add column of the name of the pdf
+    relocate(pdf_name) # move pdf name to first column
+
+  # replace generic column names with "Col"
+
+  return(main_tbl)
+}
+

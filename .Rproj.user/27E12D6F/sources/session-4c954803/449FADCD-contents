@@ -1,0 +1,182 @@
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FORTNIGHT SEQUENCE PROCESSING ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Each file has a unique fortnight assigned to it. Each employee has time recorded I
+# FIXME
+process_fortnight_sequences <- function(combined_data) {
+  cat("Processing fortnight sequences and interpolating dates...\n")
+
+  # Check if path column exists (for file identification)
+  if (!"pdf_name" %in% names(combined_data)) {
+    cat("Warning: No 'pdf_name' column found. Using group_id for file identification.\n")
+    combined_data$pdf_name <- paste0("group_", combined_data$group_id)
+  }
+
+  # Process each file separately
+  processed_data <- combined_data %>%
+    group_by(pdf_name) %>%
+    group_modify(~process_file_fortnight_sequences(.x)) %>%
+    ungroup()
+
+  return(processed_data)
+}
+
+process_file_fortnight_sequences <- function(file_data) {
+
+  unique_names <- unique(file_data$pdf_name)
+
+  # Check if it's a character vector of length 1
+  if (!is.character(unique_names) || length(unique_names) != 1) {
+    stop("Error: 'pdf_name' must contain exactly one unique character value.")
+  }
+
+  cat("Processing fortnight sequences for file:", unique(file_data$pdf_name), "\n")
+
+  # Step 1: Identify fortnight sequences from available dates
+  fortnight_sequences <- identify_fortnight_sequences(file_data)
+
+  # Step 2: Assign fortnight IDs based on name-fortnight combinations
+  file_data <- assign_fortnight_ids(file_data, fortnight_sequences)
+
+  # Step 3: Interpolate missing dates within each fortnight sequence
+  file_data <- interpolate_missing_dates(file_data, fortnight_sequences)
+
+  return(file_data)
+}
+
+identify_fortnight_sequences <- function(file_data) {
+  # Get all valid dates from the file
+  valid_dates <- file_data %>%
+    pull(cleaned_date) %>%
+    unique() %>%
+    sort()
+
+  if (length(valid_dates) == 0) {
+    cat("Warning: No valid dates found in file\n")
+    return(data.frame(fortnight_start = as.Date(character(0)),
+                      fortnight_end = as.Date(character(0)),
+                      fortnight_sequence = integer(0)))
+  }
+
+  # Group dates into fortnights (14-day periods)
+  # Find the earliest date and use it as reference point
+  earliest_date <- min(valid_dates, na.rm = TRUE)
+
+  # Create fortnight boundaries
+  fortnights <- data.frame(
+    date = seq.Date(from = earliest_date, by = "day", length.out = 14)
+  ) %>%
+    mutate(
+      fortnight_sequence = 1:14,
+      fortnight_start = earliest_date,
+      fortnight_end = fortnight_start + 13
+    ) %>%
+    group_by(fortnight_sequence) %>%
+    summarise(
+      fortnight_start = min(fortnight_start),
+      fortnight_end = max(fortnight_end),
+      dates_found = n(),
+      .groups = "drop"
+    )
+  return(fortnights)
+}
+
+assign_fortnight_ids <- function(file_data, fortnight_sequences) {
+  cat("Assigning fortnight IDs...\n")
+
+  # Initialize fortnight_id column
+  file_data$fortnight_id <- NA_integer_
+
+  # For each row with a valid date, assign fortnight_id
+  for (i in seq_len(nrow(file_data))) {
+    if (!is.na(file_data$cleaned_date[i])) {
+      date <- file_data$cleaned_date[i]
+
+      # Find which fortnight this date belongs to
+      fortnight_match <- fortnight_sequences %>%
+        filter(date >= fortnight_start & date <= fortnight_end)
+
+      if (nrow(fortnight_match) > 0) {
+        file_data$fortnight_id[i] <- fortnight_match$fortnight_sequence[1]
+      }
+    }
+  }
+
+  # Create unique ID for each name-fortnight combination
+  file_data <- file_data %>%
+    group_by(cleaned_name, fortnight_id) %>%
+    mutate(
+      name_fortnight_id = ifelse(!is.na(cleaned_name) & !is.na(fortnight_id),
+                                 cur_group_id(), NA_integer_)
+    ) %>%
+    ungroup()
+
+  # Create a master ID that's unique across the entire file
+  unique_combinations <- file_data %>%
+    filter(!is.na(name_fortnight_id)) %>%
+    distinct(cleaned_name, fortnight_id, name_fortnight_id) %>%
+    arrange(fortnight_id, cleaned_name) %>%
+    mutate(master_id = row_number())
+
+  # Merge back the master_id
+  file_data <- file_data %>%
+    left_join(unique_combinations %>% select(cleaned_name, fortnight_id, master_id),
+              by = c("cleaned_name", "fortnight_id"))
+
+  cat("Assigned IDs for", max(file_data$master_id, na.rm = TRUE), "unique name-fortnight combinations\n")
+  return(file_data)
+}
+
+interpolate_missing_dates <- function(file_data, fortnight_sequences) {
+  cat("Interpolating missing dates...\n")
+
+  interpolated_count <- 0
+
+  # For each unique name-fortnight combination with missing dates
+  for (id in unique(file_data$master_id[!is.na(file_data$master_id)])) {
+    id_data <- file_data[file_data$master_id == id & !is.na(file_data$master_id), ]
+
+    if (nrow(id_data) == 0) next
+
+    # Get the fortnight sequence for this ID
+    fortnight_id <- unique(id_data$fortnight_id)[1]
+    fortnight_info <- fortnight_sequences[fortnight_sequences$fortnight_sequence == fortnight_id, ]
+
+    if (nrow(fortnight_info) == 0) next
+
+    # Get all dates that should exist in this fortnight (14 consecutive days)
+    expected_dates <- seq(from = fortnight_info$fortnight_start,
+                          to = fortnight_info$fortnight_end,
+                          by = "day")
+
+    # Find existing dates for this ID
+    existing_dates <- id_data$cleaned_date[!is.na(id_data$cleaned_date)]
+
+    # Find missing dates
+    missing_dates <- setdiff(expected_dates, existing_dates)
+
+    if (length(missing_dates) > 0) {
+      # For rows with this ID that have missing dates, interpolate
+      missing_date_rows <- which(file_data$master_id == id & is.na(file_data$cleaned_date))
+
+      # Simple interpolation: assign missing dates to rows with missing dates
+      dates_to_assign <- missing_dates[1:min(length(missing_dates), length(missing_date_rows))]
+      rows_to_update <- missing_date_rows[1:length(dates_to_assign)]
+
+      file_data$cleaned_date[rows_to_update] <- dates_to_assign
+      file_data$date_interpolated[rows_to_update] <- TRUE
+
+      interpolated_count <- interpolated_count + length(dates_to_assign)
+    }
+  }
+
+  # Initialize interpolation flag if not exists
+  if (!"date_interpolated" %in% names(file_data)) {
+    file_data$date_interpolated <- FALSE
+  }
+
+  cat("Interpolated", interpolated_count, "missing dates\n")
+  return(file_data)
+}

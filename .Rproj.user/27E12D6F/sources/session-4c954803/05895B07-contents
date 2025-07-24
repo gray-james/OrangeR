@@ -1,0 +1,114 @@
+
+# add_00_before_last_digit_renamer.R
+#
+# This script is designed to rename files by inserting "00" before the last digit
+# in their filenames, based on a specified regex pattern.
+# It includes utility functions for safe execution and previewing changes.
+
+# --- Configuration ---
+# IMPORTANT: Replace with the actual absolute path to your scripts directory.
+# Example: scripts_directory <- "/Users/jamesgray/my_project/scripts"
+scripts_directory <- "C:/Developer/shortcut_scripts"
+
+# IMPORTANT: Replace with your specific regex pattern that identifies the files
+# you want to rename. This is crucial to avoid renaming unintended files.
+# Examples:
+# - "^analysis_script_\d+\.R$"  (for files like 'analysis_script_123.R')
+# - "data_processing_\d+\.csv$" (for files like 'data_processing_20240101.csv')
+# - "\d+\.R$"                  (for any .R file containing at least one digit)
+file_selection_regex <- "YOUR_FILE_SELECTION_REGEX_HERE"
+
+# --- Utility Functions ---
+
+#' @title Perform Dry Run of File Renaming
+#' @description Previews the proposed file renames without actually modifying any files.
+#' @param old_paths A character vector of current file paths.
+#' @param new_paths A character vector of proposed new file paths.
+perform_dry_run <- function(old_paths, new_paths, file_selection_regex = "") {
+  message("--- DRY RUN: Proposed Renames ---")
+  if (length(old_paths) == 0) {
+    message("No files to rename based on the current selection criteria.")
+    return(invisible(NULL))
+  }
+
+  for (i in 1:length(old_paths)) {
+    message(paste("Old:", basename(old_paths[i]), "-> New:", basename(new_paths[i])))
+  }
+  message("----------------------------------")
+  message("Review the proposed changes carefully. No files have been modified yet.")
+}
+
+#' @title Safely Rename Files
+#' @description Renames files and reports success or failure for each.
+#' @param old_paths A character vector of current file paths.
+#' @param new_paths A character vector of proposed new file paths.
+#' @return A logical vector indicating success (TRUE) or failure (FALSE) for each rename operation.
+safe_rename_files <- function(old_paths, new_paths) {
+  if (length(old_paths) == 0) {
+    message("No files to rename.")
+    return(logical(0))
+  }
+
+  message("
+--- Performing Actual Renaming ---")
+  rename_results <- file.rename(old_paths, new_paths)
+
+  if (all(rename_results)) {
+    message("All files renamed successfully!")
+  } else {
+    message("Some files could not be renamed. Check for errors or permissions.")
+    failed_renames <- old_paths[!rename_results]
+    message("Failed to rename:")
+    for (f in failed_renames) {
+      message(paste("-", basename(f)))
+    }
+  }
+  return(rename_results)
+}
+
+# --- Main Renaming Logic ---
+
+# Check if the scripts_directory is set
+if (scripts_directory == "/path/to/your/project/scripts") {
+  stop("ERROR: Please update 'scripts_directory' to the actual path of your files.")
+}
+
+# Check if the file_selection_regex is set
+if (file_selection_regex == "YOUR_FILE_SELECTION_REGEX_HERE") {
+  stop("ERROR: Please update 'file_selection_regex' to match the files you intend to rename.")
+}
+
+# 1. List all files in the specified directory
+all_files <- list.files(scripts_directory, full.names = TRUE)
+
+# 2. Filter files based on the user-defined selection regex
+files_to_rename <- grep(file_selection_regex, all_files, value = TRUE)
+
+if (length(files_to_rename) == 0) {
+  message(paste("No files found matching the selection regex '", file_selection_regex, "' in '", scripts_directory, "'.", sep=""))
+} else {
+  message(paste("Found", length(files_to_rename), "files matching the selection criteria."))
+
+  # 3. Construct the new file names using regex substitution
+  # This regex captures:
+  # (.*)   -> Everything before the last digit (Group 1)
+  # (\d)  -> The last digit (Group 2)
+  # ([^\d]*)$ -> Everything after the last digit until the end of the string (Group 3)
+  # The replacement inserts "00" before the captured last digit.
+  new_file_names <- sub("^(.*)(\d)([^\d]*)$", "\100\2\3", files_to_rename)
+
+  # --- Execution Steps ---
+
+  # Step A: Perform a dry run to preview changes
+  perform_dry_run(files_to_rename, new_file_names)
+
+  # Step B: Decide whether to proceed with actual renaming
+  message("
+To proceed with the actual renaming, uncomment the 'safe_rename_files' line below")
+  message("and run the script again. Otherwise, adjust the configuration and re-run the dry run.")
+
+  # Uncomment the following line ONLY after you are absolutely sure
+  # the dry run shows the correct renaming pattern.
+  #
+  # safe_rename_files(files_to_rename, new_file_names)
+}

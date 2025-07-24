@@ -1,0 +1,71 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# FLEXIBLE TOTAL EXTRACTION ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# FIXME 
+extract_totals <- function(cleaned_data, raw_data, config) {
+  total_col_name <- paste0(config$total_type, "_total_hours")
+  cleaned_data[[total_col_name]] <- NA_real_
+  
+  if (config$total_location == "col1_standalone") {
+    # Group 1: Weekly totals in Col1 as standalone 2-3 digit numbers
+    cleaned_data <- extract_col1_standalone_totals(cleaned_data, raw_data, total_col_name)
+    
+  } else if (config$total_location == "end_string_no_times") {
+    # Group 2: Fortnightly totals at end of strings with no times
+    cleaned_data <- extract_end_string_totals(cleaned_data, config, total_col_name)
+  }
+  
+  return(cleaned_data)
+}
+
+# FIXME 
+extract_col1_standalone_totals <- function(cleaned_data, raw_data, total_col_name) {
+  total_pattern <- "\\b(\\d{2,3})\\b"
+  total_indicators <- c("total", "weekly", "week", "sum")
+  
+  if (ncol(raw_data) >= 1) {
+    col1_data <- raw_data[, 1]
+    
+    for (i in seq_len(nrow(raw_data))) {
+      text <- as.character(col1_data[i])
+      if (is.na(text)) next
+      
+      text_lower <- tolower(text)
+      
+      if (any(sapply(total_indicators, function(x) grepl(x, text_lower))) ||
+          grepl("^\\s*\\d{2,3}\\s*$", text)) {
+        total_hours <- str_extract(text, total_pattern)
+        if (!is.na(total_hours)) {
+          cleaned_data[[total_col_name]][i] <- as.numeric(total_hours)
+        }
+      }
+    }
+  }
+  
+  return(cleaned_data)
+}
+
+# FIXME 
+extract_end_string_totals <- function(cleaned_data, config, total_col_name) {
+  # Group 2: Look for numbers at end of strings that don't contain times
+  time_pattern <- paste(config$time_patterns, collapse = "|")
+  
+  for (i in seq_len(nrow(cleaned_data))) {
+    text <- cleaned_data$concatenated_text[i]
+    if (is.na(text)) next
+    
+    # Check if string has no times
+    has_times <- str_detect(text, time_pattern)
+    
+    if (!has_times) {
+      # Look for number at end of string
+      total_match <- str_extract(text, "(\\d{2,3})\\s*$")
+      if (!is.na(total_match)) {
+        cleaned_data[[total_col_name]][i] <- as.numeric(total_match)
+      }
+    }
+  }
+  
+  return(cleaned_data)
+}

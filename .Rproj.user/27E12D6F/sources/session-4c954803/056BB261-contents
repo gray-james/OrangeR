@@ -1,0 +1,62 @@
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CONFIGURATION SYSTEM FOR DIFFERENT CLEANING GROUPS ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Define patterns and rules for each group
+get_group_config <- function(group_number) {
+  configs <- list(
+    # Group 1 Configuration (Original)
+    "1" = list(
+      name_extraction_rules = list(
+        type = "before_date",
+        date_pattern = "([A-Z0-9]{3}\\d{2}/\\d{2}/\\d{2})"
+      ),
+      date_patterns = c("([A-Z0-9]{3}\\d{2}/\\d{2}/\\d{2})"),
+      time_patterns = c("\\b(\\d{1,2}:\\d{2}:\\d{2}\\s*[AP]M)\\b"),
+      work_time_pattern = "(\\d{1,2}(?:\\.\\d+)?)\\s*$",
+      work_time_condition = "date_present",
+      time_extraction_condition = "date_present",
+      total_type = "weekly",
+      total_location = "col1_standalone"
+    ),
+    
+    # Group 2 Configuration
+    "2" = list(
+      name_extraction_rules = list(
+        type = "complex_conditional",
+        patterns = list(
+          ends_with_bracket = "^(.+)\\)\\s*$",
+          before_date = "before_date_marker",  # Special marker for conditional logic
+          before_number_no_time = "before_number_conditional",  # Special marker
+          single_word = "^([A-Za-z]+)\\s*$"
+        )
+      ),
+      date_patterns = c("(\\d{1,2}.{1,2}[A-Za-z]{3}.{0,3}?\\d{2,4})(?=\\s?\\D)"),  # Flexible separator
+      time_patterns = c("\\b(\\d{1,2}:\\d{2})\\b"),  # 24-hour format
+      work_time_pattern = "(\\d{1,2}(?:\\.\\d+)?)\\s*$",  # Only when date present
+      work_time_condition = "date_present",
+      total_type = "fortnightly",
+      total_location = "end_string_no_times"
+    ),
+    
+    # Group 3 Configuration (Same as Group 2 but separate for flexibility)
+    "3" = list(
+      name_extraction_rules = list(
+        type = "complex_conditional",
+        patterns = list(
+          ends_with_bracket = "^(.+)\\)\\s*$",
+          before_date = "before_date_marker",  # Special marker for conditional logic
+          single_word = "^([A-Za-z]+)\\s*$"
+        )
+      ),
+      date_patterns = c("(\\d{1,2}.{1,2}[A-Za-z]{3}.{0,3}?\\d{2,4})(?=\\s?\\D)"),  # Flexible separator
+      time_patterns = c("\\b(\\d{1,2}:\\d{2})\\b"),  # 24-hour format
+      work_time_pattern = "(\\d{1,2}(?:\\.\\d+)?)\\s*$",  # Only when date present
+      total_type = "fortnightly",
+      total_location = "end_string_no_times"
+    )
+  )
+  
+  return(configs[[as.character(group_number)]])
+}

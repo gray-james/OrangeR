@@ -1,0 +1,147 @@
+file_list <- list.files( path = raw_time_path, pattern="*.pdf$", recursive = TRUE )
+source_path <- "C:/Users/JG3288/OneDrive - Corporate Network/Compliance and Enforcement - Orange Supermarkets/03 Data Processing/01 Original Calculations/08 R ETL Model/01 Codes"
+file_list <- list.files( path = raw_time_path, pattern="*.pdf$", recursive = TRUE )
+file_list <- list.files( path = source_path, pattern="*.pdf$", recursive = TRUE )
+read_pdf <- function(file){
+raw_txt <- tryCatch(pdf_text(file), error = function(e) "PDF Error") # tryCatch skips errors; file is read with tag PDF Error
+df_txt <- data.frame( page = seq( length( raw_txt ) ), raw_txt ) # forming data frame and adding page numbers
+split_txt <- stack( setNames( str_split(df_txt$raw_txt, "[\\r\\n]+"), df_txt$page ) ) # split text by row and space
+main_tbl_matrix <- str_split_fixed( str_trim( split_txt$values ), "\\s{2,}", 10 )
+colnames( main_tbl_matrix ) <- paste0("Col", seq_len(ncol(main_tbl_matrix)))
+index_df <- data.frame(page_no = split_txt$ind, stringsAsFactors = FALSE)
+main_tbl <- bind_cols( as.data.frame(main_tbl_matrix, stringsAsFactors = FALSE,), index_df  ) %>% # split into columns where space between items in a row is 2 or more - then bind the index column to last column of new table
+rename(page_no = last(colnames(.))) %>% # rename the last column to "page_no"
+mutate(page_no = as.numeric(page_no), # make page numbers numbers not string
+pdf_name = file) %>% # add column of the name of the pdf
+relocate(pdf_name) # move pdf name to first column
+# replace generic column names with "Col"
+return(main_tbl)
+}
+read_pdf("C:/Users/JG3288/OneDrive - Corporate Network/Compliance and Enforcement - Orange Supermarkets/02 Data Sources/01 Original Calculations/02 Time/Pinnacle Rhodes/01042024-14042024 - Timesheet.pdf")
+a<-read_pdf("C:/Users/JG3288/OneDrive - Corporate Network/Compliance and Enforcement - Orange Supermarkets/02 Data Sources/01 Original Calculations/02 Time/Pinnacle Rhodes/01042024-14042024 - Timesheet.pdf")
+View(a)
+source("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R/1_0_pdf_text_raw_extract_0100_V1.R")
+source("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R/0_1_global_constants_0100_V1.R")
+library(pdftools)
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(clipr)
+library(lubridate)
+library(future)
+library(backports)
+library(purrr)
+script_dirs <- head(dir_ls(source_path, type = "directory"), 7)
+loaded_packages <- map(script_dirs, function(dir){
+scripts <- dir_ls(dir, glob = "*.R", recurse = TRUE)
+walk(scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+names(scripts) <- path_file(scripts)
+invisible(scripts)
+})
+names(loaded_packages) <- path_file(script_dirs)
+View(loaded_packages)
+script_dirs
+source_path <- "C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R"
+source_path <- "C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R"
+script_dirs <- list.files(path = source_path, pattern = "^[1-6]", full.names = TRUE)
+script_dirs
+script_dirs <- list.files(path = source_path, pattern = "^[0-6]", full.names = TRUE)
+script_dirs <- list.files(path = source_path, pattern = "^[0-6]", full.names = TRUE)
+script_dirs
+loaded_packages <- map(script_dirs, function(dir){
+scripts <- dir_ls(dir, glob = "*.R", recurse = TRUE)
+walk(scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+names(scripts) <- path_file(scripts)
+invisible(scripts)
+})
+C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R/0_0_cleaning_group_config_0100_V1.R
+setwd("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R")
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# CONSTANTS (Change Paths) ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+setwd("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R")
+loaded_packages <- map(script_dirs, function(dir){
+scripts <- dir_ls(dir, glob = "*.R", recurse = TRUE)
+walk(scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+names(scripts) <- path_file(scripts)
+invisible(scripts)
+})
+names(loaded_scripts) <- path_file(included_scripts)
+# Might need to Change pattern
+included_scripts <- list.files(path = source_path, pattern = "^[0-6]", full.names = TRUE)
+loaded_scripts <- map(included_scripts, function(dir){
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+invisible(included_scripts)
+})
+# Single File Export Variables
+dfs_to_export <- c(combined_roster_data_with_dup = data.frame())
+source("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R/0_1_global_constants_0100_V1.R")
+loaded_scripts <- map(included_scripts, function(dir){
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+invisible(included_scripts)
+})
+names(loaded_scripts) <- path_file(included_scripts)
+loaded_scripts <- map(included_scripts, function(dir){
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+invisible(included_scripts)
+})
+loaded_scripts <- included_scripts %>%
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+library(pdftools)
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(clipr)
+library(lubridate)
+library(future)
+library(backports)
+library(purrr)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# LOAD SCRIPTS ----
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+loaded_scripts <- included_scripts %>%
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+source_path <- "C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R"
+# Might need to Change pattern
+included_scripts <- list.files(path = source_path, pattern = "^[0-6]", full.names = TRUE)
+loaded_scripts <- included_scripts %>%
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+names(loaded_scripts) <- path_file(included_scripts)
+read_pdf("C:/Users/JG3288/OneDrive - Corporate Network/Care Group Pty Ltd/04 Cleansed Data/Data Cleaning/Rosters/")
+included_scripts %>%
+walk(included_scripts, ~ {
+message("Sourcing: ", path_file(.x))
+source(.x, local = FALSE)
+})
+source("C:/Users/JG3288/OneDrive - Corporate Network/DevOps/Calculations_Team/OrangeR package/R/0_1_global_constants_0100_V1.R")
+fs::dir_tree()
+writeLines(capture.output((dir_tree(path = ".", all = TRUE))))
+writeLines(capture.output((dir_tree(path = ".", all = TRUE))), "project_structure.txt")
+install.packages("tinytex", method = "wininet")
