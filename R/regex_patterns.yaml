@@ -1,33 +1,13 @@
-# regex_patterns.yaml
-# Author: James Gray
-# Last Updated: 2025-07-01
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OrangeR Regex Pattern Configuration
 #
-# Description:
-# This file defines a comprehensive library of regular expression patterns
-# categorized by data type, along with metadata for each pattern.
-# It also defines how these patterns are combined into specific group configurations.
-#
-# --- Structure of a Pattern Entry ---
-# Each pattern entry under a category (e.g., 'dates', 'times') should have:
-#   regex: The actual regular expression string.
-#   description: A clear explanation of what the pattern matches.
-#   example: A string that the pattern would successfully match.
-#   complexity: A qualitative measure (e.g., "simple", "medium", "complex").
-#   tags: Optional keywords for further categorization (e.g., "US_format", "24_hour").
-#
-# --- How to Add New Patterns ---
-# 1. Identify the appropriate category (e.g., 'dates', 'times'). If a new category
-#    is needed, create it.
-# 2. Choose a unique, descriptive name for your pattern (e.g., 'dd_mm_yyyy_slash').
-# 3. Add the 'regex', 'description', 'example', 'complexity', and 'tags' fields.
-#
-# --- Group Definitions ---
-# The 'group_definitions' section combines these patterns into named configurations
-# that can be used by different cleaning groups. Each entry in a group definition
-# references a pattern by its category and name (e.g., 'dates.dd_mm_yyyy_slash').
-#
-# ------------------------------------------------------------------------------
+# This file can now be managed directly via the built-in Shiny application.
+# It is recommended to use the app for configuration to ensure correctness.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ==============================================================================
+# I. REUSABLE PATTERN LIBRARY
+# ==============================================================================
 patterns:
   # --- Date Patterns ---
   dates:

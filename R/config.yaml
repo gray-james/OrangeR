@@ -1,3 +1,16 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# OrangeR Main Configuration
+#
+# Some settings in this file may be managed via the built-in Shiny application.
+# For core path and script settings, manual editing is still appropriate.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ==============================================================================
+# I. PATH CONFIGURATION
+# ==============================================================================
+# Defines the core input and output directories for the ETL pipeline.
+# It is best practice to use relative paths from the project root.
+# The shiny app may override or use these paths.
 # config.yaml
 # Author: James Gray
 # Last Updated: 2025-07-01

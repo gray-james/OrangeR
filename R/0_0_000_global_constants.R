@@ -2,10 +2,9 @@
 #'
 #' @description This script lays the groundwork for our commitment to data integrity.
 #'   It establishes the core constants and configuration settings that govern the
-#'   time data ETL pipeline, serving as the central authority for file paths,
-#'   group identifiers, and data structures. By centralizing these definitions,
-#'   we ensure that the entire process is transparent, auditable, and aligned
-#'   with a single standard of truth.
+#'   time data ETL pipeline. While these constants can be loaded from YAML files
+#'   for non-interactive sessions, the primary and recommended method for
+#'   configuration is now through the built-in Shiny application.
 #'
 #' @details
 #' The constants defined here are the bedrock of a fair and accurate system.
@@ -15,25 +14,23 @@
 #'     locations. I believe that disciplined path management is the first step
 #'     toward a trustworthy data workflow.
 #'   \item \strong{Matter Specific Extract}: Specifies the distinct data cohorts
-#'     or client groups ("Pinnacle Rhodes," etc.) to be processed. This ensures
-#'     that each group's data is handled with appropriate, specific rules.
+#'     or client groups. This is now primarily managed via the Shiny app.
 #'   \item \strong{Initialise Global Variables}: Pre-allocates list structures
-#'     to hold data as it is progressively refined through the ETL pipeline
-#'     (raw, extracted, cleaned, QA). This architectural choice enhances clarity
-#'     and predictability.
+#'     to hold data as it is progressively refined through the ETL pipeline.
 #'   \item \strong{Matter Specific Export}: Defines the naming conventions and
-#'     schemas for the final, verified datasets, ensuring a consistent and
-#'     reliable output.
+#'     schemas for the final, verified datasets.
 #' }
 #'
-#' @section Path Management and Configuration:
-#' My dream is a system where configuration is fully externalized, making the
-#' pipeline adaptable and robust. In line with this, path management will be
-#'   driven by the `config.yaml` file, and I advocate for using packages like
-#'   `here` or `config` to manage environmental settings in a production environment.
+#' @section Configuration Management:
+#' My dream is a system where configuration is fully transparent and user-driven.
+#' The built-in Shiny application is the realization of that dream. It provides an
+#' intuitive interface for managing group configurations and the regex pattern
+#' library. For headless or scripted execution, the system falls back to loading
+#' from the `config.yaml` and `regex_patterns.yaml` files.
 #'
 #' @author James Gray (JG3288)
-#' @seealso \code{\link{config.yaml}} for external configuration.
+#' @seealso The Shiny application in `inst/shiny-apps/manual-pdf-extractor/` for
+#'   interactive configuration.
 #' @export
 
 # The following constants would typically be loaded from a config file
