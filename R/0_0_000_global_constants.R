@@ -1,34 +1,39 @@
-#
-#' @title Define Global Constants for the ETL Process
+#' @title Establish Foundational Constants for a Trusted ETL Process
 #'
-#' @description This script establishes the core constants and configuration
-#'   settings required for the time data ETL pipeline. It is the central
-#'   location for defining file paths, group identifiers, and initial data
-#'   structures. To ensure portability and align with R package best practices,
-#'   this script avoids hardcoded absolute paths and `setwd()`.
+#' @description This script lays the groundwork for our commitment to data integrity.
+#'   It establishes the core constants and configuration settings that govern the
+#'   time data ETL pipeline, serving as the central authority for file paths,
+#'   group identifiers, and data structures. By centralizing these definitions,
+#'   we ensure that the entire process is transparent, auditable, and aligned
+#'   with a single standard of truth.
 #'
 #' @details
-#' The constants are organized into several key sections:
+#' The constants defined here are the bedrock of a fair and accurate system.
+#' They are organized to provide clarity and control over the pipeline:
 #' \itemize{
-#'   \item \strong{Paths}: Defines the input (source) and output (save)
-#'     directories for the ETL process. These should be managed via a
-#'     configuration file or environment variables in a production setting.
-#'   \item \strong{Matter Specific Extract}: Specifies the distinct groups or
-#'     clients whose timesheet data is being processed (e.g., "Pinnacle Rhodes").
+#'   \item \strong{Paths}: Defines the sanctioned input (source) and output (save)
+#'     locations. I believe that disciplined path management is the first step
+#'     toward a trustworthy data workflow.
+#'   \item \strong{Matter Specific Extract}: Specifies the distinct data cohorts
+#'     or client groups ("Pinnacle Rhodes," etc.) to be processed. This ensures
+#'     that each group's data is handled with appropriate, specific rules.
 #'   \item \strong{Initialise Global Variables}: Pre-allocates list structures
-#'     to hold data as it moves through the different stages of the ETL pipeline
-#'     (raw, extracted, cleaned, QA). This is done for clarity and organization.
-#'   \item \strong{Matter Specific Export}: Defines naming conventions and data
-#'     structures for the final output files.
+#'     to hold data as it is progressively refined through the ETL pipeline
+#'     (raw, extracted, cleaned, QA). This architectural choice enhances clarity
+#'     and predictability.
+#'   \item \strong{Matter Specific Export}: Defines the naming conventions and
+#'     schemas for the final, verified datasets, ensuring a consistent and
+#'     reliable output.
 #' }
 #'
-#' @section Path Management:
-#' It is highly recommended to use a package like `here` or `config` to manage
-#' paths and other environmental settings. For this package, path configuration
-#' will be centralized in the `config.yaml` file.
+#' @section Path Management and Configuration:
+#' My dream is a system where configuration is fully externalized, making the
+#' pipeline adaptable and robust. In line with this, path management will be
+#'   driven by the `config.yaml` file, and I advocate for using packages like
+#'   `here` or `config` to manage environmental settings in a production environment.
 #'
 #' @author James Gray (JG3288)
-#' @seealso \code{\link{config.yaml}}, \code{here::here()}
+#' @seealso \code{\link{config.yaml}} for external configuration.
 #' @export
 
 # The following constants would typically be loaded from a config file

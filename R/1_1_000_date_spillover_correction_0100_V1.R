@@ -2,37 +2,41 @@
 # STEP 3: DATE SPILLOVER ----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' @title Correct Date and Time Spillover Errors in Parsed Data
-#' @description This function identifies and corrects a common data extraction
-#'   issue where date and time information for an employee incorrectly "spills"
-#'   onto the subsequent line. It looks for rows that contain an extracted name
-#'   but are missing a date, and then inspects the next row to see if it
-#'   contains the missing information.
+#' @title Restore Integrity by Correcting Date Spillover Errors
+#' @description I believe that data, like a contract, must be whole to be valid.
+#'   This function addresses a critical data quality issue where date and time
+#'   information, fractured during extraction, "spills" onto a subsequent line.
+#'   It is designed to methodically identify and correct these errors, ensuring
+#'   that every record accurately reflects the intended information.
 #'
 #' @details
-#' A "date spillover" occurs when a row with an employee's name is followed
-#' immediately by a row that starts with a date. This function handles this by:
+#' A "date spillover" is more than a formatting error; it's a potential source
+#' of unfairness, where an employee's record could be misinterpreted. My approach
+#' to fixing this is both precise and transparent:
 #' \enumerate{
-#'   \item Identifying potential spillover rows using `dplyr::lag`.
-#'   \item Checking if the next row's text starts with a valid date pattern from
-#'     the provided configuration.
-#'   \item If a spillover is confirmed, it "pulls up" the date, clock-in/out
-#'     times, and work hours from the subsequent row into the current row.
-#'   \item It then flags the subsequent row for removal by marking a
-#'     `spillover_row` column as `TRUE`.
+#'   \item It identifies rows that are candidates for spillover: those with an
+#'     employee's name but a missing date.
+#'   \item It then inspects the subsequent row, using the sanctioned date patterns
+#'     from the group's configuration to confirm if it contains the missing data.
+#'   \item Upon confirmation, it "pulls up" the fractured data—the date, clock-in/out
+#'     times, and work hours—reuniting it with the correct employee record.
+#'   \item Finally, it flags the now-redundant subsequent row for removal by marking
+#'     a `spillover_row` column as `TRUE`, providing a clear, auditable trail of
+#'     the correction.
 #' }
-#' This vectorized approach using `dplyr` is significantly more efficient than
-#' a row-by-row loop for large datasets.
+#' This vectorized implementation is a core part of my commitment to building
+#' not just accurate, but also efficient and scalable data systems.
 #'
-#' @param data A data frame or tibble containing the parsed timesheet data. It
-#'   must include the columns `extracted_name`, `extracted_date`, and
-#'   `concatenated_text`.
-#' @param config A list of configuration settings for the current group,
-#'   retrieved from `get_group_config()`. It must contain `date_patterns`,
-#'   `time_patterns`, and `work_time_pattern`.
+#' @param data A data frame containing the parsed timesheet data, which may
+#'   suffer from spillover-induced integrity issues. It must include the columns
+#'   `extracted_name`, `extracted_date`, and `concatenated_text`.
+#' @param config A list containing the sanctioned configuration for the current
+#'   data cohort, retrieved from `get_group_config()`. It provides the authoritative
+#'   patterns for dates, times, and work hours.
 #'
-#' @return The input data frame with corrected dates, times, and a new logical
-#'   column `spillover_row` indicating which rows should be filtered out later.
+#' @return The data frame with its integrity restored. Dates and times are
+#'   corrected, and a new logical column, `spillover_row`, is added to transparently
+#'   indicate which rows were corrected.
 #'
 #' @importFrom dplyr mutate lag lead if_else case_when
 #' @importFrom stringr str_extract str_extract_all str_trim

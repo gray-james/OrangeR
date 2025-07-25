@@ -2,42 +2,49 @@
 # generate_period_id ----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' @title Generate a Unique ID for Each Employee Pay Period
-#' @description This function is the core of the employee data segmentation module.
-#' It takes raw, vertically-structured timesheet data and performs three critical tasks:
-#' 1.  **Identifies Blocks:** It intelligently detects contiguous blocks of records that
-#'     belong to a single employee, even without an explicit ID.
-#' 2.  **Assigns IDs:** It assigns a consistent, sequential `employee_period_id`
-#'     to every row within an identified block.
-#' 3.  **Validates Period:** It checks if the date range for any given block exceeds
-#'     the expected `period_days`, flagging potential data quality issues.
+#' @title Impose Logical Structure by Generating Employee Pay Period IDs
+#' @description I believe that true data integrity comes from understanding the
+#'   underlying structure of the information, even when it is not explicitly
+#'   stated. This function is the core of our data segmentation module. It is
+#'   designed to intelligently analyze vertically-structured timesheet data and
+#'   perform three critical tasks:
+#' 1.  **Identify Employee Blocks:** It methodically detects contiguous blocks of
+#'     records belonging to a single employee.
+#' 2.  **Assign Auditable IDs:** It assigns a consistent and sequential
+#'     `employee_period_id` to every record within an identified block.
+#' 3.  **Validate Period Integrity:** It cross-references the date range of each
+#'     block against the expected `period_days`, flagging any deviations as
+#'     potential data quality issues.
 #'
 #' @section Core Logic:
-#' The function first uses a primary sorting column (`sort_order_col`) to establish
-#' the ground-truth order of records, reflecting their physical layout in the source file.
-#' Within this order, it identifies the start of a new employee's timesheet when the
-#' date sequence resets (i.e., a date is earlier than the one preceding it).
-#' The generated ID is then filled across all rows belonging to that employee's block.
+#' My approach is to treat the data like an archaeological site, using the
+#' physical layout of the source file as our ground truth. The function first
+#' establishes the authoritative order of records using `sort_order_col`. Within
+#' this order, it deduces the start of a new employee's timesheet by detecting
+#' a "reset" in the date sequence. This allows us to impose a logical structure
+#' that honors the original data's context.
 #'
 #' @author James Gray (JG3288)
 #' @family Data Cleaning Functions
 #'
-#' @param df A data frame containing the timesheet data. It must contain the
-#'   columns specified in `group_col`, `date_col`, and `sort_order_col`, and
-#'   is expected to have a list-column named `data_quality_flags` initialized.
-#' @param group_col The bare (unquoted) name of the column that identifies the
-#'   source file or data group (e.g., `file_id`). Processing is partitioned by this column.
-#' @param date_col The bare (unquoted) name of the column that contains the
-#'   timesheet dates (must be of class `Date`).
-#' @param period_days An integer specifying the expected number of days in a pay period
-#'   (e.g., 14 for fortnightly). This is used for the data quality validation step.
-#' @param sort_order_col The bare (unquoted) name of a numeric column used to define the
-#'   authoritative row order *before* any date-based logic is applied.
+#' @param df A data frame containing the timesheet records. It must have the
+#'   `data_quality_flags` list-column initialized to track our validation efforts.
+#' @param group_col The bare (unquoted) name of the column identifying the source
+#'   file or data group (e.g., `file_id`). This ensures processing is correctly
+#'   partitioned.
+#' @param date_col The bare (unquoted) name of the column containing the
+#'   authoritative timesheet dates (must be of class `Date`).
+#' @param period_days An integer specifying the expected number of days in a pay
+#'   period (e.g., 14). This serves as the benchmark for our data quality validation.
+#' @param sort_order_col The bare (unquoted) name of a numeric column that defines
+#'   the true, physical row order before any logical sorting is applied.
 #'
-#' @return The input data frame with two new columns:
-#'   - `employee_period_id`: An integer ID that is consistent for all rows in a block.
-#'   - `data_quality_flags`: The input list-column, now with appended warnings for
-#'     any blocks that violate the `period_days` constraint.
+#' @return The input data frame, now with two new columns that enforce structure
+#'   and transparency:
+#'   - `employee_period_id`: An integer ID that ensures all records within a
+#'     pay period are logically linked.
+#'   - `data_quality_flags`: An updated list-column with appended warnings for
+#'     any period that violates our integrity checks, providing a clear audit trail.
 #'
 #' @importFrom dplyr arrange group_by mutate lag coalesce first if_else ungroup select
 #' @importFrom tidyr fill
@@ -46,7 +53,8 @@
 #' @export
 #'
 #' @examples
-#' # Create sample data with a reliable line number for sorting
+#' # My dream is to bring clarity to even the most unstructured data.
+#' # Here, we create sample data that mimics the vertical layout of a PDF.
 #' sample_data <- data.frame(
 #'   file_id = "file_A.pdf",
 #'   line_num = 1:11,
@@ -57,12 +65,13 @@
 #'     "2024-07-08", # Employee 4
 #'     NA
 #'   )),
-#'   # Initialize the required list-column for quality flags
+#'   # We must initialize a list-column to hold our data quality findings.
 #'   data_quality_flags = I(vector("list", 11))
 #' )
 #'
-#' # Process the data using the new {{}} syntax
-#' result <- identify_and_fill_employee_blocks(
+#' # This function will now identify the four distinct employee blocks
+#' # and flag the third one for having an unusually long date range.
+#' result <- generate_period_id(
 #'   df = sample_data,
 #'   group_col = file_id,
 #'   date_col = cleaned_date,

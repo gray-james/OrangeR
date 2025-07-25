@@ -1,33 +1,37 @@
-#' @title Parse and Finalize Data Types
-#' @description This function takes the raw extracted data and converts it into
-#'   standard R data types. It handles the parsing of dates and times from text,
-#'   converts work hours to numeric, and calculates the duration of work shifts.
+#' @title Finalize Data Integrity by Parsing and Standardizing Data Types
+#' @description I believe that for data to be truly useful, it must speak the
+#'   language of computation. This function performs the critical transformation of
+#'   raw extracted text into standardized, reliable R data types. It is here that
+#'   we instill the final layer of structure, handling the complexities of dates,
+#'   times, and durations to ensure the data is ready for rigorous analysis.
 #'
 #' @details
-#' The function performs several key transformations within a `dplyr` pipeline:
+#' My dream is a system where every data point is not just present, but precise.
+#' This function realizes that dream through a series of key transformations:
 #' \enumerate{
-#'   \item \strong{Date Parsing}: It uses `lubridate::parse_date_time` to
-#'     robustly parse `extracted_date` strings, trying multiple common formats.
-#'   \item \strong{Time Parsing}: It combines the `extracted_clock_in` and
-#'     `extracted_clock_out` times with the newly parsed date and uses
-#'     `lubridate::parse_date_time` to create full `POSIXct` objects. It
-#'     handles both 12-hour (AM/PM) and 24-hour time formats.
-#'   \item \strong{Next-Day Correction}: It intelligently handles overnight shifts
-#'     by checking if the clock-out time is earlier than the clock-in time. If
-#'     so, it adds one day to the clock-out time.
-#'   \item \strong{Duration Calculation}: It computes the duration of the work
-#'     shift in hours by taking the difference between the corrected clock-out
-#'     and clock-in times.
-#'   \item \strong{Type Conversion}: It converts `work_time` to numeric.
+#'   \item \strong{Date Parsing}: It leverages `lubridate::parse_date_time` to
+#'     robustly interpret various date formats found in the `extracted_date` strings,
+#'     ensuring consistency regardless of the source format.
+#'   \item \strong{Time Parsing}: It creates full `POSIXct` datetime objects by
+#'     combining the extracted clock-in/out times with their corresponding dates.
+#'     This process intelligently handles both 12-hour and 24-hour time formats.
+#'   \item \strong{Overnight Shift Correction}: It fairly and accurately handles
+#'     overnight shifts by detecting when a clock-out time is earlier than a
+#'     clock-in time and correctly advancing the day.
+#'   \item \strong{Duration Calculation}: It computes the precise duration of each
+#'     work shift in hours, providing a reliable basis for payroll calculations.
+#'   \item \strong{Type Conversion}: It ensures that recorded work hours are
+#'     converted to a numeric format for computational use.
 #' }
-#' Rows that do not have a valid clock-in time after parsing are filtered out.
+#' As a final integrity check, rows that lack a valid clock-in time after this
+#' rigorous parsing are filtered out, as they cannot contribute to a fair analysis.
 #'
-#' @param data A data frame containing the raw extracted columns (e.g.,
-#'   `extracted_date`, `extracted_clock_in`, `extracted_clock_out`, `work_time`).
+#' @param data A data frame containing the raw, text-based extracted columns
+#'   (e.g., `extracted_date`, `extracted_clock_in`, `extracted_clock_out`).
 #'
-#' @return A data frame with new, cleaned columns (`cleaned_date`,
+#' @return A data frame with new, fully standardized columns (`cleaned_date`,
 #'   `cleaned_clock_in_time`, `cleaned_clock_out_time`, `cleaned_work_hours`,
-#'   `calculated_duration`) and standardized data types.
+#'   `calculated_duration`). The data is now ready for high-integrity analysis.
 #'
 #' @importFrom dplyr mutate filter case_when
 #' @importFrom lubridate parse_date_time days

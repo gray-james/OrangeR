@@ -1,36 +1,42 @@
-#' @title Clean Extracted Employee Names
-#' @description This function standardizes the `extracted_name` column by
-#'   applying a series of cleaning operations. It can apply different, more
-#'   aggressive cleaning rules for specific data groups that are known to have
-#'   poorer quality OCR results.
+#' @title Ensure Fair and Consistent Recognition by Cleaning Employee Names
+#' @description I believe that recognizing an individual correctly is a fundamental
+#'   mark of respect. This function is dedicated to standardizing the `extracted_name`
+#'   column, ensuring that every employee is represented consistently and accurately.
+#'   It applies tailored cleaning routines to account for the varying data quality
+#'   from different sources, such as poor OCR results.
 #'
 #' @details
-#' The function creates a new `cleaned_name` column and performs the following
-#' steps, with variations based on the `group_number`:
+#' My approach is to apply the right level of intervention to achieve fairness.
+#' This function creates a new `cleaned_name` column by applying a series of
+#' validation and correction steps, with more intensive routines for data cohorts
+#' known to have quality issues.
 #'
-#' \strong{Standard Cleaning (Default):}
+#' \strong{Standard Cleaning (Default):} This is our baseline for data integrity.
 #' \itemize{
-#'   \item Removes non-standard characters, leaving only letters, spaces, commas,
-#'     dots, and dashes.
-#'   \item Collapses multiple whitespace characters into a single space.
-#'   \item Trims leading/trailing whitespace.
-#'   \item Converts names to Title Case (e.g., "james gray" -> "James Gray").
-#'   \item Corrects "Last, First" format to "First Last".
+#'   \item It removes non-standard characters while preserving essential punctuation,
+#'     ensuring the name is clean but not distorted.
+#'   \item It standardizes whitespace and applies Title Case for consistency.
+#'   \item It intelligently corrects "Last, First" formats to the standard
+#'     "First Last" order, ensuring uniformity.
 #' }
 #'
-#' \strong{Group 2 Cleaning:}
+#' \strong{Group 2 Cleaning:} This is a form of data advocacy for lower-quality
+#' sources.
 #' \itemize{
-#'   \item Includes all standard cleaning steps.
-#'   \item Applies more aggressive character removal.
-#'   \item Removes very short strings (likely OCR errors).
-#'   \item Corrects common OCR mistakes (e.g., "0" -> "O", "1" -> "I").
+#'   \item It includes all standard cleaning steps.
+#'   \item It applies more assertive character removal to eliminate OCR noise.
+#'   \item It removes very short strings that are unlikely to be valid names.
+#'   \item It corrects common, systematic OCR errors (e.g., "0" to "O").
 #' }
 #'
-#' @param data A data frame containing the `extracted_name` column.
-#' @param group_number An integer (e.g., 1, 2) specifying which cleaning
-#'   routine to use. Defaults to 1.
+#' @param data A data frame containing the `extracted_name` column, which holds
+#'   the raw, unstandardized names.
+#' @param group_number An integer (e.g., 1, 2) that specifies which cleaning
+#'   routine to apply, ensuring a tailored and appropriate level of cleaning.
 #'
-#' @return The input data frame with a new `cleaned_name` column.
+#' @return The input data frame with a new `cleaned_name` column, where every
+#'   name has been standardized to uphold our commitment to fair and accurate
+#'   recognition.
 #'
 #' @importFrom dplyr mutate case_when
 #' @importFrom stringr str_replace_all str_trim str_to_title str_detect str_replace

@@ -2,33 +2,42 @@
 # READ PDF TO DF FUNC----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' @title Read and Parse Text from Grouped PDF Files
-#' @description This function orchestrates the reading of multiple PDF files,
-#'   which are organized by predefined groups. It identifies the files belonging
-#'   to each group, processes them in parallel, and returns a list of data frames
-#'   (tibbles), with each data frame containing the extracted text for one group.
+#' @title Initiate the Transformation of Raw PDFs into Transparent Data
+#' @description I believe that the journey to data clarity begins with a single,
+#'   decisive step: extracting information from opaque sources. This function
+#'   orchestrates the foundational 'Extract' step of our ETL pipeline. It is
+#'   designed to read multiple PDF files, organized by distinct cohorts (groups),
+#'   and transform their raw text into a structured, analysis-ready format.
 #'
 #' @details
-#' The function operates as follows:
+#' My dream is a system where every piece of data, no matter how unstructured,
+#' can be brought into a clear and auditable framework. This function is the
+#' first realization of that dream. It operates with both efficiency and purpose:
 #' \enumerate{
-#'   \item It sets up a parallel processing plan using the `future` framework.
-#'   \item It iterates through the provided `groups`.
-#'   \item For each group, it filters the `file_list` to find matching files.
-#'   \item It uses `furrr::future_lapply` to call the `read_pdf` helper
-#'     function on each file in parallel.
-#'   \item The results for each group are combined into a single tibble, cleaned,
-#'     and stored in a named list.
+#'   \item It establishes a parallel processing environment, leveraging modern
+#'     hardware to handle large volumes of data efficiently.
+#'   \item It methodically processes each defined `group`, ensuring that files
+#'     are correctly attributed to their specific cohort.
+#'   \item For each group, it invokes the `read_pdf` helper function across all
+#'     relevant files in parallel, using `furrr::future_lapply` for speed and
+#'     scalability.
+#'   \item The resulting data is then unified, cleaned of artifacts, and
+#'     organized into a list of tibbles, ready for the next stage of validation.
 #' }
-#' This function is a key part of the 'Extract' step in the ETL pipeline.
+#' This function is not just reading files; it's laying the first stone in the
+#' foundation of a trusted data system.
 #'
-#' @param file_list A character vector of PDF file names (not full paths).
-#' @param groups A character vector of group names to process.
-#' @param base_path The root directory where the PDF files are located. This
-#'   is prepended to the file names in `file_list`.
-#' @param workers The number of parallel workers to use. Defaults to `future::availableCores() - 2`.
+#' @param file_list A character vector of PDF file names, representing the raw,
+#'   unprocessed source material.
+#' @param groups A character vector defining the distinct data cohorts to be
+#'   processed, ensuring each is handled according to its unique requirements.
+#' @param base_path The sanctioned root directory where the source PDF files
+#'   reside, providing a single point of reference for data ingestion.
+#' @param workers The number of parallel workers dedicated to the extraction
+#'   process. Defaults to a resource-conscious setting.
 #'
-#' @return A named list of tibbles. Each element in the list corresponds to a
-#'   group and contains the parsed data from all PDFs in that group.
+#' @return A named list of tibbles, where each tibble represents a complete and
+#'   structured dataset for one group, ready for further transformation and validation.
 #'
 #' @importFrom future plan multisession sequential
 #' @importFrom furrr future_lapply

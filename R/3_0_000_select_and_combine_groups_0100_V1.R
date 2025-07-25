@@ -1,33 +1,38 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # GROUP SELECT + COMBINATION FUNCTION ----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' @title Combine and Select Data from Multiple Groups
-#' @description This function takes a list of data frames (one for each processed
-#'   group) and combines them into a single, unified data frame. It also provides
-#'   an option to select a specific set of columns, ensuring the final output
-#'   has a consistent, standardized schema.
+#' @title Unify Disparate Data Cohorts into a Single, Cohesive Dataset
+#' @description I believe that a holistic view is essential for fair analysis.
+#'   This function performs the critical act of unification, taking a list of
+#'   data frames—each representing a distinct, processed data cohort—and combining
+#'   them into a single, standardized dataset. This step is the foundation for
+#'   all subsequent high-level analysis and reporting.
 #'
 #' @details
-#' The function first uses `dplyr::bind_rows` to stack the data frames from the
-#' list. The `.id` argument is used to create a new column (`file_id`) that
-#' identifies which group each row originated from.
+#' My approach is to ensure that once data is cleaned, it is brought into a
+#' common, auditable schema. This function achieves that through two key actions:
+#' \enumerate{
+#'   \item It uses `dplyr::bind_rows` to stack the data frames, creating a single,
+#'     vertically integrated dataset. Crucially, it uses the `.id` argument to
+#'     create a `file_id` column, ensuring that every row retains a transparent
+#'     link to its original data cohort.
+#'   \item It provides the option to select a specific set of columns, allowing
+#'     us to craft a final, analysis-ready schema that is free of intermediate
+#'     or raw columns. This ensures a clean, focused, and consistent final output.
+#' }
+#' Finally, it assigns a `combined_row_id` to provide a unique and stable
+#' identifier for every record in the fully unified dataset.
 #'
-#' If a character vector of column names is provided to `columns_to_keep`, the
-#' function will select only those columns. This is useful for creating a final,
-#' clean output without intermediate or raw columns. If `columns_to_keep` is
-#' `NULL`, all columns will be retained.
+#' @param group_list A named list of data frames, where each data frame represents
+#'   a fully processed data cohort. The names of the list elements are used to
+#'   preserve the provenance of each record.
+#' @param columns_to_keep An optional character vector specifying the exact columns
+#'   to be included in the final, standardized output. If `NULL` (the default),
+#'   all columns will be retained.
 #'
-#' Finally, it adds a `combined_row_id` to provide a unique identifier for each
-#' row in the final combined dataset.
-#'
-#' @param group_list A named list of data frames. The names of the list elements
-#'   will be used to create the `file_id` column.
-#' @param columns_to_keep An optional character vector of column names to retain
-#'   in the final combined data frame. If `NULL` (the default), all columns
-#'   are kept.
-#'
-#' @return A single, combined data frame with a `file_id` column indicating the
-#'   original group and a unique `combined_row_id`.
+#' @return A single, unified data frame that represents the entire dataset, with
+#'   a `file_id` column to ensure traceability and a `combined_row_id` for unique
+#'   identification. This is the final, analysis-ready source of truth.
 #'
 #' @importFrom dplyr bind_rows select all_of
 #' @importFrom tidyselect everything

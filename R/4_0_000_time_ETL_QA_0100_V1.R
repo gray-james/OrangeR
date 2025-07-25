@@ -4,25 +4,35 @@
 
 # TODO : Grouping ffor checks might change - Configure what duplication means in each dataset.
 
-#' @title Run a Comprehensive Suite of Quality Assurance Checks
-#' @description This function serves as the main wrapper for the entire data
-#'   quality assurance process. It executes a series of specialized checking
-#'   functions and compiles their results into a single list object.
+#' @title Orchestrate a Comprehensive Audit of Data Quality and Integrity
+#' @description I believe that trust in data is earned through rigorous, transparent
+#'   validation. This function serves as the central orchestrator for our entire
+#'   data quality assurance process. It systematically executes a suite of
+#'   specialized checking functions, each designed to scrutinize a different
+#'   facet of the data's integrity.
 #'
 #' @details
-#' The QA process covers several areas:
+#' My dream is a system where every potential data issue is proactively
+#' identified and reported. This function is a key part of that vision, covering
+#' several critical areas of validation:
 #' \itemize{
-#'   \item Missing data checks
-#'   \item Date and time integrity
-#'   \item Hour and outlier detection
-#'   \item Fortnight and period validation
-#'   \item Name and ID completeness and consistency
+#'   \item \strong{Completeness:} Checking for missing data in key fields.
+#'   \item \strong{Date & Time Integrity:} Validating the logic and consistency of
+#'     all temporal data.
+#'   \item \strong{Reasonableness:} Detecting outliers in worked hours that may
+#'     indicate errors.
+#'   \item \strong{Period Validation:} Ensuring the integrity of fortnightly and
+#'     other pay periods.
+#'   \item \strong{Identifier Consistency:} Checking for completeness and consistency
+#'     in names and IDs.
 #' }
-#' Each check is performed by a dedicated helper function. The results are
-#' then passed to `print_qa_summary` to be displayed in the console.
+#' The results of this comprehensive audit are then compiled and presented in a
+#' clear, accessible summary.
 #'
-#' @param final_data The fully processed and combined data frame to be checked.
-#' @return A list where each element is the result of a specific QA check.
+#' @param final_data The fully processed and unified data frame, which is now
+#'   ready for its final and most thorough validation.
+#' @return A list where each element contains the detailed results of a specific
+#'   QA check, providing a complete, auditable record of the validation process.
 #'
 #' @author James Gray (JG3288)
 #' @export
@@ -681,6 +691,36 @@ create_custom_config <- function(group_name, config_list) {
   return(config_list)
 }
 
+#' @title Process Multiple Data Cohorts in a Scalable, Auditable Batch
+#' @description I believe that our commitment to data quality must be scalable.
+#'   This function provides a robust batch processing capability, allowing us to
+#'   apply our entire, standardized cleaning and quality assurance pipeline to
+#'   multiple, distinct data cohorts in a single, auditable run.
+#'
+#' @details
+#' My approach is to build systems that are not only accurate but also efficient
+#' and repeatable. This function orchestrates the end-to-end process for each
+#' specified data cohort:
+#' \enumerate{
+#'   \item It systematically iterates through each file path and its corresponding
+#'     group number.
+#'   \item For each cohort, it executes the full `clean_timesheet_data` pipeline.
+#'   \item It then immediately runs the comprehensive `run_quality_checks` suite.
+#'   \item Finally, it saves the cleaned data and compiles the results, providing
+#'     a complete record of the entire batch operation.
+#' }
+#'
+#' @param file_paths A character vector of file paths, with each path pointing to
+#'   the raw data for a specific cohort.
+#' @param group_numbers A numeric vector specifying the corresponding group number
+#'   for each file path, ensuring the correct cleaning logic is applied.
+#' @param output_dir The sanctioned directory where the final, cleaned data files
+#'   for each cohort will be saved.
+#'
+#' @return A nested list containing the results for each processed group. Each
+#'   element includes the cleaned data, the full QA results, and the path to the
+#'   final output file, ensuring complete transparency and traceability.
+#'
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # BATCH PROCESSING FUNCTION
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

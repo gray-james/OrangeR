@@ -2,28 +2,38 @@
 # EXPORT DATAFRAMES ----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' @title Export Data Frames to a Styled Excel File
-#' @description Exports a list of data frames to a single, styled Excel workbook.
-#'   Each data frame is written to a separate sheet. The function includes
-#'   automatic versioning to prevent overwriting existing files.
+#' @title Deliver a Unified Dataset in a Styled, Professional Excel File
+#' @description I believe that the final output of our work should be as clear,
+#'   professional, and transparent as the process that created it. This function
+#'   takes a list of finalized data frames and exports them into a single,
+#'   beautifully styled Excel workbook. Each data frame is given its own sheet,
+#'   and automatic versioning is used to ensure a clear audit trail.
 #'
 #' @details
-#' This function creates a new Excel workbook and iterates through the provided
-#' list of data frames (`dfs_to_export`). For each data frame, it calls the
-#' `add_styled_worksheet` helper to create a new sheet, write the data, and
-#' apply a standard set of professional styles (e.g., table formatting, auto
-#' column widths, frozen panes).
+#' My goal is to deliver a final product that is not just data, but a polished,
+#' accessible report. This function achieves that by:
+#' \enumerate{
+#'   \item Creating a new Excel workbook to serve as the container for our
+#'     final, trusted data.
+#'   \item Iterating through the provided list of data frames and using the
+#'     `add_styled_worksheet` helper to write each one to a separate, clearly
+#'     named sheet.
+#'   \item Applying a suite of professional styles, including table formatting,
+#'     automatic column widths, and frozen panes, to ensure the data is highly readable.
+#'   \item Automatically versioning the output file (e.g., `_V0001`, `_V0002`)
+#'     to prevent accidental overwrites and maintain a clear history of deliverables.
+#' }
 #'
-#' The output file is automatically versioned (e.g., `_V0001`, `_V0002`) based on
-#' files already present in the `save_path`.
+#' @param dfs_to_export A named list of the final, validated data frames to be
+#'   delivered. The names of the list elements will become the sheet names.
+#' @param base_file_name The base name for the final output file, which serves
+#'   as a clear identifier for the deliverable (e.g., "TIME_ETL_OUTPUT").
+#' @param save_path The sanctioned directory where the final Excel file will be saved.
+#' @param table_start_row The row in the Excel sheet where the data table should
+#'   begin, allowing for headers or titles above the data.
 #'
-#' @param dfs_to_export A named list of data frames to export. The names of the
-#'   list elements will become the sheet names in the Excel file.
-#' @param base_file_name The base name for the output file (e.g., "TIME_ETL_OUTPUT").
-#' @param save_path The directory where the Excel file will be saved.
-#' @param table_start_row The row in the Excel sheet where the data table should start.
-#'
-#' @return Invisibly returns the path to the newly created Excel file.
+#' @return Invisibly returns the full path to the newly created, versioned, and
+#'   styled Excel file, confirming the successful delivery of our work.
 #' @import openxlsx
 #' @author James Gray (JG3288)
 #' @export
@@ -46,16 +56,21 @@ export_single_file <- function(dfs_to_export, base_file_name, save_path, table_s
   return(invisible(file_name))
 }
 
-#' @title Export Grouped Data to Multiple Styled Excel Files
-#' @description Exports a nested list of data frames to multiple, styled Excel
-#'   workbooks, one for each top-level group.
+#' @title Deliver Grouped Datasets in Multiple, Styled Excel Files
+#' @description For projects with multiple distinct data cohorts, I believe in
+#'   delivering tailored, separate reports. This function exports a nested list
+#'   of data frames into multiple, styled Excel workbooks—one for each top-level
+#'   group—ensuring that each cohort's data is presented clearly and distinctly.
 #'
 #' @param grouped_dfs_to_export A named, nested list of data frames. The top-level
-#'   names represent groups and will be used in the file names.
-#' @param base_file_name The base name for the output files.
-#' @param folder_save_path The root directory where the Excel files will be saved.
+#'   names identify the distinct data cohorts and are used in the file names.
+#' @param base_file_name The common base name for all output files, providing a
+#'   consistent identifier for the project.
+#' @param folder_save_path The root directory where the individual, group-specific
+#'   Excel files will be saved.
 #'
-#' @return Invisibly returns a vector of file paths to the newly created Excel files.
+#' @return Invisibly returns a character vector of file paths to all the newly
+#'   created, styled, and versioned Excel files.
 #' @export
 export_multiple_files <- function(grouped_dfs_to_export, base_file_name, folder_save_path) {
   output_files <- c()

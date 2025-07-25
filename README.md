@@ -2,146 +2,68 @@
 output: html_document
 ---
 
-# OrangeR
+# 🍊 OrangeR: A Commitment to Data Fairness and Accuracy
 
-✨ *Giving messy timesheet data a stern talking-to.*
+*Numbers don’t lie, but they do need a good advocate. This package is that advocate.*
 
-`OrangeR` is a purpose-built R package designed to clean, structure, and validate messy timesheet data extracted from various sources, primarily unstructured PDFs and structured CSV/Excel files. It handles multiple data formats, corrects common extraction errors, and unifies everything into a single, analysis-ready dataset.
+I believe that for public institutions to maintain trust, the data they rely on must be impeccable. `OrangeR` is a purpose-driven R package designed to ensure just that. It provides a robust, transparent, and auditable ETL pipeline to transform chaotic, error-prone timesheet data into a source of truth. My goal is to empower organizations to uphold fairness in payroll and ensure accuracy in project accounting through meticulously engineered data systems.
 
-## 🎯 The Problem
+## 🎯 The Mission: From Data Chaos to Institutional Trust
 
-Timesheet data extracted from PDFs or even structured files is often unstructured, inconsistent, and prone to quality issues. It frequently suffers from problems like data spilling across columns, inconsistent date formats, and other complexities that make manual cleaning time-consuming, error-prone, and a significant drain on resources. This can lead to delays in payroll, inaccurate project costing, and compliance risks.
+In payroll and labor compliance, the details matter. Messy timesheet data—whether from unstructured PDFs or inconsistent spreadsheets—isn't just a technical problem; it's a fairness problem. It can lead to incorrect payments, compliance failures, and an erosion of trust between employees and institutions.
 
-## 🤝 Non-Technical Explaination
+`OrangeR` was built to solve this. It serves as a dedicated "data refinery," using algorithmic thinking to impose structure and clarity on raw data.
 
-In many organizations, managing timesheet data is a critical but often challenging task. Data extracted from various sources—especially from PDFs-can be messy, inconsistent, and difficult to use. This leads to significant manual effort, delays in processing payroll, inaccurate project cost tracking, and potential compliance issues.
+```mermaid
+graph TD;
+    A[📄 Raw, Unreliable Data <br/> (PDFs, CSVs)] --> B{OrangeR: The Advocate};
+    B --> |1. Extract & Structure| C[📝 Validated Data];
+    C --> |2. Transform & Clean| D[🧼 Verified & Enriched Data];
+    D --> |3. Load & Assure| E[📊 A Single Source of Truth];
 
-`OrangeR` solves this problem by automating the entire process of cleaning, structuring, and validating this complex timesheet data. It acts as a robust "data factory" that takes in raw, inconsistent timesheets and transforms them into a clean, reliable, and analysis-ready format. This means:
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#ffc,stroke:#333,stroke-width:4px
+    style E fill:#cfc,stroke:#333,stroke-width:2px
+```
 
--   **Reduced Manual Effort:** No more tedious, error-prone manual data entry or cleaning.
--   **Improved Accuracy:** Automated processes minimize human error, leading to more reliable data for payroll and project management.
--   **Faster Processing:** Data is ready for use much quicker, enabling timely reporting and decision-making.
--   **Enhanced Compliance:** Consistent and validated data helps meet regulatory requirements and reduces audit risks.
+By automating this process, we achieve:
+-   **✅ Unquestionable Accuracy:** Minimizing human error to ensure every detail is correct.
+-   **✅ Enhanced Fairness:** Providing a reliable foundation for payroll and compliance.
+-   **✅ Meaningful Action:** Freeing up resources from manual data cleaning to focus on analysis and improvement.
 
-Ultimately, `OrangeR` empowers your organization to turn chaotic timesheet data into a valuable asset, ensuring operational efficiency and data integrity.
+## 🏛️ An Architecture of Trust
 
-## 💡 The Solution
-
-This package automates the entire cleaning workflow, transforming raw, inconsistent timesheet data into a reliable, analysis-ready format. It uses a series of configurable R scripts to implement a robust ETL (Extract, Transform, Load) pipeline. It intelligently parses, cleans, and restructures the data, applying comprehensive quality assurance checks along the way. By automating this process, `OrangeR` significantly reduces manual effort, improves data accuracy, and ensures timely and reliable reporting for critical business functions.
-
-## 🧭 Project Philosophy & Structure
-
-**Mission:** To create a robust, configuration-driven R package to clean, structure, and unify messy timesheet data extracted from multiple PDF formats. The system will handle diverse data quality issues—including multi-column data spillage and date overflow—and produce a single, analysis-ready dataset with comprehensive quality assurance.
-
-To achieve this mission, `OrangeR` adheres to a strict, expanded script naming convention that underpins its modularity and dual-pipeline architecture:
+My dream is to build systems that are as transparent as they are powerful. `OrangeR`'s dual-pipeline architecture is designed for this purpose, handling both unstructured and structured data with precision. Its modularity, enforced by a clear naming convention, ensures that every step is auditable and maintainable.
 
 **`[Layer]_[Subgroup]_[Module]_[Description]_[Version].R`**
 
--   **`[Layer]`**: Represents the stage in the ETL process (e.g., `0` for Config, `1` for Extract, `2` for Transform, `3` for Load, `4` for QA).
--   **`[Subgroup]`**: Defines a specific focus area within a layer.
--   **`[Module]`**: A unique ID that dictates the processing pipeline:
-    -   `1xx` modules: Exclusively for the **Unstructured PDF Pipeline**.
-    -   `2xx` modules: Exclusively for the **Structured CSV/Excel Pipeline**.
-    -   `0xx` modules: **Shared scripts** used by both pipelines.
--   **`[Description]`**: A clear, `snake_case` name describing the script's function.
--   **`[Version]`**: Indicates the script's version (e.g., `V1`, `V2`).
+This structure allows the system to gracefully handle diverse data sources while maintaining a single, unified standard for the final output.
 
-This convention ensures clarity, organization, and maintainability across the project's diverse processing stages.
-
-### First Layer - Groups
-
-0.  Constants
-1.  Extract
-2.  Transform
-3.  Load
-4.  Quality Assurance
-5.  Performance
-6.  Reference
-
-### Second Layer - Subgroups
-
-0_0 - Global Constants (Matter Spesific - Non Technical)
-
-0_1 - Package Config (Matter Spesific - Technical)
-
-1_0 - PDF Reading Unprocessed
-
-1_1 - Data Structuring (Concat and Regex)
-
-2_0 - Data Cleaning (Detecting Data Types and standard string cleaning)
-
-2_1 - Data Imputation (Filling in Missing Values)
-
-3_0 - Final Data Load
-
-## /✨ Key Features
-
--   **Multi-Source Ingestion:** Processes data from both unstructured PDF files and structured CSV/Excel files.
--   **Multi-Group Processing:** Ingests and cleans data from different timesheet formats using distinct regex patterns and configuration rules.
--   **Data Structuring & Correction:** Handles complex extraction issues like multi-column data spillage, date overflow between rows, and inconsistent data layouts.
--   **Intelligent Extraction & Cleaning:** Extracts and cleans names, dates, times, and work hours, normalizing them to a consistent format.
--   **Data Imputation:** Implements fortnight sequence detection, interpolates missing dates, and assigns unique IDs for employee-period combinations to handle messy or incomplete data.
--   **Comprehensive Quality Assurance:** Includes a dedicated QA module to flag inconsistencies and errors in the final output, populating a `data_quality_flags` list-column with detailed warnings for each row.
--   **Unified Output:** Combines all processed groups and sources into a single, clean, and structured dataset conforming to a standardized schema.
--   **Unique ID Assignment:** Assigns unique IDs for name-fortnight combinations across files (specific to Orange timesheets, but generalizable).
--   **Hybrid Performance:** Employs a hybrid vectorized/loop approach for optimal performance, flexibility, and readability, especially for large datasets.
-
-## 🚀 System Architecture
-
-The package follows a sequential, modular ETL process. Core scripts handle the main workflow, while optional scripts can be used for performance analysis.
-
-``` mermaid
-graph TD;
-    subgraph Main ETL Pipeline
-        direction LR
-        A[0. Config] --> B[1. Extract];
-        B --> C[2. Transform];
-        C --> D[3. Load];
-        D --> E[4. QA];
-    end
-
-    subgraph Utilities
-        direction LR
-        F[5. Performance Analysis];
-    end
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#ccf,stroke:#333,stroke-width:2px
-    style C fill:#cfc,stroke:#333,stroke-width:2px
-    style D fill:#ffc,stroke:#333,stroke-width:2px
-    style E fill:#fcc,stroke:#333,stroke-width:2px
-    style F fill:#eee,stroke:#333,stroke-width:2px
-```
-
-## 🌊 Dual Processing Pipelines & Data Flow
-
-`OrangeR` is built around two distinct, parallel processing paths: one for unstructured PDF files and one for structured CSV/Excel files. These paths converge when the data is loaded into the final, standardized schema.
-
-``` mermaid
+```mermaid
 graph TD
     subgraph Input Sources
-        A[<fa:fa-file-pdf> Raw PDF Files]
-        B[<fa:fa-file-excel> Raw CSV/Excel Files]
+        A[<fa:fa-file-pdf> Unstructured PDFs]
+        B[<fa:fa-file-excel> Structured CSV/Excel]
     end
 
     subgraph "Path A: PDF Pipeline (1xx Modules)"
         direction LR
-        A --> P1_Extract(1. Extract PDF Text);
-        P1_Extract --> P1_Transform(2. Transform PDF Data);
+        A --> P1_Extract(1. Text Extraction);
+        P1_Extract --> P1_Transform(2. Data Transformation);
     end
 
     subgraph "Path B: CSV/Excel Pipeline (2xx Modules)"
         direction LR
-        B --> P2_Extract(1. Extract Tabular Data);
-        P2_Extract --> P2_Transform(2. Transform Tabular Data);
+        B --> P2_Extract(1. Tabular Ingestion);
+        P2_Extract --> P2_Transform(2. Data Normalization);
     end
 
     subgraph "Shared Stages (0xx Modules)"
         direction LR
-        P1_Transform --> S_Load(3. Load & Unify Data);
+        P1_Transform --> S_Load(3. Unification & Loading);
         P2_Transform --> S_Load;
         S_Load --> S_QA(4. Quality Assurance);
-        S_QA --> S_Output[<fa:fa-table> Standardized Output];
+        S_QA --> S_Output[<fa:fa-table> Standardized, Trusted Data];
     end
 
     classDef input fill:#fcc,stroke:#333,stroke-width:2px;
@@ -157,124 +79,57 @@ graph TD
     class S_Output output;
 ```
 
-## 📦 Installation - TBC?
+## 🛠️ Installation
 
-This package is hosted on Azure DevOps. To install, you will need the `remotes` package and a Personal Access Token (PAT).
+This package is hosted on Azure DevOps. To install it, you will need the `remotes` package and a Personal Access Token (PAT).
 
-``` r
-# Install remotes if you don't have it
+```r
+# Install remotes if you don't have it yet
 if (!requireNamespace("remotes", quietly = TRUE)) {
   install.packages("remotes")
 }
 
 # Install from Azure DevOps
-# Replace <organization>, <project>, and <repository> with your details
 remotes::install_git(
   url = "https://dev.azure.com/<organization>/<project>/_git/<repository>",
   credentials = git2r::cred_user_pass("username", "YOUR_AZURE_DEVOPS_PAT")
 )
 ```
 
-## 🛠️ Usage
+## 🚀 Getting Started
 
-This example demonstrates how to run the full ETL pipeline on a directory of PDF files. The process can be parallelized for improved performance on large datasets.
+Here’s how to run the pipeline and transform your raw data into a reliable asset.
 
-``` r
-# Ensure the package is loaded
-# library(OrangeR) # Uncomment if you've installed the package
+```r
+# 1. Load the package (if installed)
+# library(OrangeR)
 
-# E.G define path to raw timesheet files (PDFs or CSVs/Excels)
+# 2. Define your source and output paths
 open_configuration_and_constants()
 
-# Run the main ETL function
-# The function will automatically find, process, and combine all supported files.
-# Future versions will leverage parallel processing for speed.
+# 3. Execute the ETL process
 run_timesheet_etl(
   source_dir = source_directory,
   output_file = output_path,
-  parallel_processing = TRUE # Set to TRUE to process groups simultaneously
+  parallel_processing = TRUE # Recommended for large datasets
 )
 
-message("ETL process complete. Cleaned data saved to: ", output_path)
+message("✅ Process complete. Your data is now a trusted source, saved at: ", output_path)
 ```
 
-## ⚙️ Dependencies & Environment
+## 📜 Ethical Engineering Philosophy
 
--   **R Version:** Designed for a standard corporate R installation.
--   **Packages:** Aims to minimize external CRAN dependencies, primarily relying on `base-R` and packages within the `tidyverse` ecosystem.
--   **Environment Variables:** No environment variables are required at this time.
+I believe that how we build is as important as what we build. `OrangeR` is developed with a philosophy of "ethical engineering" to ensure its output is trustworthy, robust, and maintainable.
 
-## 📝 R Coding Standards
+-   **Clarity Through Explicit Namespaces:** All external function calls are explicit (e.g., `dplyr::mutate()`). This removes ambiguity and makes the code's dependencies transparent.
+-   **Robustness with Modern Tidy Evaluation:** We use `{{ }}` for programming with `dplyr`, creating functions that are both powerful and easy to understand.
+-   **Predictability Through Functional Purity:** Functions are designed to be predictable. They take data as input, transform it, and return a *new*, modified data frame, ensuring the original data remains unaltered.
+-   **Reliability via Defensive Programming:** Every function validates its inputs using `assertthat::assert_that()`. This ensures functions operate as expected or fail immediately with clear, informative errors, which is critical for building trust in the system.
 
-To ensure code clarity, maintainability, and to prevent conflicts, `OrangeR` adheres to specific R coding standards:
+## 🤝 Let's Collaborate
 
--   **Explicit Namespace Calls:** All external function calls use the `package::function()` syntax (e.g., `dplyr::mutate()`). This makes dependencies explicit, improves readability, and prevents issues arising from masked functions when multiple packages are loaded.
--   **Tidy Evaluation with `dplyr`:** When programming with `dplyr` and passing column names from function arguments, the `{{ }}` (embrace) operator is used (e.g., `dplyr::select({{ my_column }})`). This is the modern, idiomatic approach for tidy evaluation, ensuring robust and readable code.
--   **Functional Purity:** Functions are designed to be as "pure" as possible, meaning they do not modify their inputs directly. Instead, they take a data frame as input and return a *new*, modified data frame. This makes functions predictable, easier to test, and prevents unexpected side effects in complex data pipelines.
--   **Defensive Programming:** Every function validates its inputs using `assertthat::assert_that()` at the beginning. This ensures that functions either succeed predictably or fail immediately with clear, informative error messages, which is critical for debugging.
+I am always looking for ways to improve this tool and extend its impact. If you have ideas for new features, encounter a bug, or want to discuss how to apply this to a new challenge, please reach out.
 
-## 🤝 Contribution Guidelines
+---
 
--   **Philosophy:** I welcome any contributions that help make this package a more robust and universal solution for timesheet cleaning. If you have an idea for a new feature, a bug fix, or a way to handle a new timesheet format, please suggest it!
--   **Process:**
-    1.  **Report Bugs:** Submit an issue on the Azure DevOps board, including a reproducible example.
-    2.  **Propose Features:** Submit an issue outlining the new feature and its purpose.
-    3.  **Submit Pull Requests:** Fork the repository, create a new branch, and submit a PR with your changes. Please ensure your code adheres to the style guide and all tests pass.
--   **Style Guide:** Code should follow the [tidyverse style guide](https://style.tidyverse.org/). Please ensure your code would pass a `lintr::lint_package()` check.
-
-## 🗺️ Roadmap & Future Enhancements
-
-The `OrangeR` project is continuously evolving, with a focus on enhancing performance, flexibility, and robustness. Here are some key areas for future development:
-
-### Performance & Scalability
-
--   **Progress Indicators:** Add progress indicators for large dataset processing to provide better user feedback.
--   **Memory Optimization:** Implement memory optimization techniques for very large files, potentially through chunked processing.
--   **Parallel Processing:** Enhance parallel processing capabilities to handle multiple groups and files simultaneously for improved speed.
--   **Caching System:** Develop a caching system for intermediate results to avoid reprocessing data, especially for repetitive tasks like date parsing.
--   **Date Parsing Cache:** Implement a specific caching mechanism for date parsing, optimizing performance for files with recurring date patterns.
-
-### Configuration & Flexibility
-
--   **Pattern Library:** Create a comprehensive pattern library with reusable regex patterns across groups and associated `parse_data_time` order configurations.
--   **Configurable QA Thresholds:** Implement configurable thresholds for quality assurance checks (e.g., outlier detection, validation limits).
--   **External Configuration:** Support external configuration files (JSON/YAML) for pattern management, allowing for easier updates and customization without code changes.
--   **Coordinate-Based Extraction:** Implement coordinate functionality for cases where regex patterns are the same but data location differs across documents.
--   **Auto-Format Detector:** Develop an auto-format detector (fingerprinting) to suggest format templates for new, unseen timesheet files.
-
-### Error Handling & Robustness
-
--   **Comprehensive Error Recovery:** Implement a comprehensive error recovery system with fallback patterns for data extraction.
--   **Graceful Degradation:** Ensure graceful degradation when regex patterns fail completely, providing informative warnings rather than hard errors.
--   **Recovery Strategies:** Create recovery strategies for malformed data structures.
--   **Confidence Scoring:** Implement a confidence score for the quality of extracted data, providing users with an indication of data reliability.
-
-## 🧪 Testing
-
-The project uses the `testthat` framework for unit tests. To run all tests, use the following command in the R console from the project's root directory:
-
-``` r
-# Load the devtools package
-if (!requireNamespace("devtools", quietly = TRUE)) {
-  install.packages("devtools")
-}
-
-# Run all tests for the package
-devtools::test()
-```
-
-## 📈 Changelog
-
-**v0.1.0 - (2025-06-30)**
-
--   Initial development of the core ETL package structure.
--   Implemented cleaning and processing logic for three distinct timesheet groups.
--   Established base quality assurance checks.
-
-## ⚖️ License
-
-This project is licensed under the **MIT License**. See the `LICENSE.md` file for details.
-
-## 👥 Maintainers
-
--   **James Gray**
+*This documentation reflects my commitment to building technology that serves the public good. Always happy to chat.*

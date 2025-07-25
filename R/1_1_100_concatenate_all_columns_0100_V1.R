@@ -2,29 +2,35 @@
 # CONCATENATE COLUMNS (VECTORIZED) ----
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#' @title Concatenate Text Columns into a Single String
-#' @description This function takes a data frame with multiple text columns
-#'   (typically named `Col1`, `Col2`, etc.) and collapses them into a single
-#'   `concatenated_text` column for each row. This is a crucial pre-processing
-#'   step that simplifies pattern matching, as it allows regex to be applied to
-#'   the entire text of a line at once.
+#' @title Unify Disparate Text Columns into a Single, Coherent String
+#' @description I believe that to understand the whole story, you have to see all
+#'   the pieces together. This function performs a critical pre-processing step
+#'   by collapsing multiple, fragmented text columns (`Col1`, `Col2`, etc.) into
+#'   a single, unified `concatenated_text` column. This act of unification is
+#'   essential for enabling accurate and holistic pattern matching across the
+#'   entirety of a record.
 #'
 #' @details
-#' The function operates as follows:
+#' My approach is to create a single, coherent narrative for each row, which
+#' allows for more reliable data extraction. The function operates as follows:
 #' \enumerate{
-#'   \item It identifies all columns that start with "Col".
-#'   \item Using `dplyr::rowwise`, it iterates through each row.
-#'   \item For each row, it takes all `Col` values, removes any that are `NA`
-#'     or empty strings, and then pastes the remaining values together, separated
-#'     by a single space.
-#'   \item It also adds a unique `row_id` to each row for stable indexing.
+#'   \item It identifies all fragmented text columns that begin with "Col".
+#'   \item It then methodically processes each row, gathering all non-empty
+#'     fragments.
+#'   \item For each row, it pastes these fragments together into a single,
+#'     space-separated string, creating the `concatenated_text` column.
+#'   \item It also assigns a unique `row_id`, ensuring that every record has a
+#'     stable and auditable identifier throughout the cleaning process.
 #' }
-#' This approach is robust to rows with varying numbers of non-empty columns.
+#' This process transforms a fragmented view into a holistic one, which is
+#' fundamental to achieving data integrity.
 #'
-#' @param data A data frame or tibble containing the columns to be concatenated.
+#' @param data A data frame containing the disparate text columns that need to
+#'   be unified into a single, coherent record.
 #'
-#' @return The input data frame with two new columns: `concatenated_text` (the
-#'   combined string) and `row_id` (a unique integer for each row).
+#' @return The input data frame, now enriched with two new columns:
+#'   `concatenated_text`, which provides a unified view of the record, and
+#'   `row_id`, which ensures its traceability.
 #'
 #' @importFrom dplyr rowwise mutate c_across ungroup
 #' @importFrom stringr str_c

@@ -3,50 +3,59 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #
-#' @title Retrieve Configuration for a Specific Data Group
-#' @description This function acts as a centralized configuration hub, providing
-#'   a set of rules and regex patterns tailored for a specific data processing
-#'   group. Based on the `group_number`, it returns a list containing all the
-#'   necessary parameters for extracting and cleaning data for that group.
+#' @title Retrieve a Fair and Consistent Configuration for a Data Group
+#' @description I believe that fairness requires consistency. This function serves as
+#'   a centralized configuration hub, retrieving a tailored set of rules and
+#'   regex patterns for a specific data processing group. By applying a
+#'   consistent, pre-defined configuration, we ensure that data from each cohort
+#'   is treated with the same rigorous standards, which is a cornerstone of
+#'   building a trustworthy and equitable data system.
 #'
 #' @details
-#' The configuration list is structured to cover various aspects of the ETL
-#' process, including rules for name extraction, and patterns for dates, times,
-#' and work hours. This function-based approach allows for easy management and
-#' extension of cleaning rules for new data sources.
+#' The configuration returned by this function is the blueprint for achieving
+#' data integrity for a specific group. It contains all the necessary parameters
+#' for the fair extraction and cleaning of data. This function-based approach
+#' .  not only promotes manageable and extensible cleaning rules but also provides
+#'   an auditable trail of the logic applied to each data source.
 #'
-#' The returned list contains the following key elements:
+#' The returned list contains the following critical elements:
 #' \itemize{
-#'   \item \strong{name_extraction_rules}: A list defining the logic for
-#'     extracting employee names.
-#'   \item \strong{date_patterns}: A character vector of regex patterns to
-#'     identify dates.
-#'   \item \strong{time_patterns}: A character vector of regex patterns to
-#'     identify time entries.
-#'   \item \strong{work_time_pattern}: A regex pattern to extract worked hours.
-#'   \item \strong{work_time_condition}: A condition specifying when to apply
-#'     the `work_time_pattern` (e.g., only when a date is present).
-#'   \item \strong{total_type}: The type of total to expect (e.g., "weekly",
-#'     "fortnightly").
-#'   \item \strong{total_location}: A rule indicating where to find the total
-#'     value in the data.
+#'   \item \strong{name_extraction_rules}: The sanctioned logic for identifying
+#'     employee names, ensuring consistent recognition.
+#'   \item \strong{date_patterns}: A vector of approved regex patterns to
+#'     accurately identify all valid date formats.
+#'   \item \strong{time_patterns}: A vector of regex patterns for identifying
+#'     time entries, critical for accurate hour logging.
+#'   \item \strong{work_time_pattern}: The specific regex for extracting total
+#'     worked hours, a key component of fair pay.
+#'   \item \strong{work_time_condition}: A rule that governs when the
+#'     `work_time_pattern` is applied, adding a layer of validation.
+#'   \item \strong{total_type}: The expected granularity of the total (e.g., "weekly",
+#'     "fortnightly"), which informs validation checks.
+#'   \item \strong{total_location}: A rule indicating where to locate the total
+#'     value, ensuring it is never missed.
 #' }
 #'
-#' @param group_number An integer or character (1, 2, or 3) specifying the
-#'   configuration group to retrieve.
+#' @param group_number An integer or character identifying the data cohort
+#'   (e.g., 1, 2, or 3) whose configuration is needed. This ensures the
+#'   correct, pre-approved rules are applied.
 #'
-#' @return A named list containing the configuration settings for the requested
-#'   group. If the group number is not found, it returns `NULL`.
+#' @return A named list containing the complete, auditable configuration for
+#'   the requested group. It returns `NULL` if the group is not recognized,
+#'   preventing the application of incorrect rules.
 #'
 #' @author James Gray (JG3288)
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Get configuration for Group 1
+#' # My dream is a system where every data group is treated with fairness.
+#' # Here is how we retrieve the specific rules for two different groups.
+#'
+#' # Get the tailored configuration for Group 1
 #' config_g1 <- get_group_config(1)
 #'
-#' # Get configuration for Group 2
+#' # Get the tailored configuration for Group 2
 #' config_g2 <- get_group_config("2")
 #' }
 get_group_config <- function(group_number, config_path = "R/regex_patterns.yaml") {

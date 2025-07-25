@@ -1,9 +1,9 @@
 Package: OrangeR
-Title: A Robust ETL Pipeline for Cleaning Messy Timesheet Data
+Title: A Purpose-Driven ETL Pipeline for Ensuring Fairness and Accuracy in Timesheet Data
 Version: 1.0.0
 Authors@R: 
     person("James", "Gray", email = "james.gray@example.com", role = c("aut", "cre"), comment = c(ORCID = "YOUR-ORCID-ID", work_id = "JG3288"))
-Description: A comprehensive ETL (Extract, Transform, Load) toolkit designed to ingest, clean, structure, and validate messy timesheet data from various sources, including unstructured PDFs and structured CSV/Excel files. It intelligently handles common data quality issues like multi-column spillage and inconsistent formats, transforming raw data into an analysis-ready, unified dataset with extensive quality assurance checks.
+Description: A purpose-driven ETL (Extract, Transform, Load) toolkit committed to transforming messy, error-prone timesheet data into a source of truth. By systematically ingesting, cleaning, and validating data from diverse sources like unstructured PDFs and CSVs, this package ensures the accuracy and fairness of payroll and compliance systems. Its core mission is to empower institutions by providing a transparent, auditable, and robust data foundation, thereby fostering trust and enabling meaningful, data-informed action.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

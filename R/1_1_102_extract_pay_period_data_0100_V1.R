@@ -1,42 +1,55 @@
-#' @title Extract Pay Period Totals
-#' @description Extracts total values (e.g., total weekly hours) from timesheet
-#'   data. The function can operate in two modes: grouping by a period identifier
-#'   to find one total for the entire period, or operating row-by-row.
+#' @title Ensure Integrity by Extracting and Validating Pay Period Totals
+#' @description I believe that for data to be trustworthy, it must be correct at
+#'   both the detail and summary level. This function is designed to extract and
+#'   validate pay period totals (e.g., total weekly hours), a critical component
+#'   for ensuring fair payroll and accurate compliance reporting. It can operate
+#'   in two modes to accommodate different data structures.
 #'
 #' @details
-#' This function is designed to find and extract a single total value that
-#' applies to a defined period (e.g., a pay week or fortnight).
+#' My dream is a system that not only extracts data but also intelligently
+#' validates it. This function embodies that principle by finding a single,
+#' authoritative total for a given pay period.
 #'
-#' \strong{Grouped Mode} (`use_period_grouping = TRUE`):
+#' \strong{Grouped Mode (`use_period_grouping = TRUE`):} This is the preferred
+#' mode for ensuring data integrity.
 #' \itemize{
-#'   \item The data is grouped by `employee_period_id` (and optionally a file ID).
-#'   \item Within each group, it searches all `concatenated_text` entries for a
-#'     match to the `total_pattern`.
-#'   \item It handles three cases:
+#'   \item It groups all records by a unique period identifier (`employee_period_id`),
+#'     treating the entire period as a single analytical unit.
+#'   \item Within each group, it searches for all occurrences of the total value,
+#'     as defined by the sanctioned `total_pattern`.
+#'   \item It then enforces a "single source of truth" rule:
 #'     \enumerate{
-#'       \item Exactly one total is found: It's assigned to all rows in the group.
-#'       \item No total is found: A "No total found" flag is added.
-#'       \item Multiple totals are found: A "Multiple totals found" flag is
-#'         added, and the total is left as `NA` to signal a data quality issue.
+#'       \item If exactly one total is found, it is confidently assigned to all
+#'         records within the period. This is the ideal outcome.
+#'       \item If no total is found, it flags a potential data gap, ensuring that
+#'         the omission is not overlooked.
+#'       \item If multiple, conflicting totals are found, it flags a significant
+#'         data quality issue and withholds the total, preventing the propagation
+#'         of erroneous data.
 #'     }
 #' }
-#' \strong{Row-wise Mode} (`use_period_grouping = FALSE`):
+#' \strong{Row-wise Mode (`use_period_grouping = FALSE`):} A simpler mode for
+#' when data is not structured by period.
 #' \itemize{
-#'   \item It simply applies the `total_pattern` to each row's
-#'     `concatenated_text` individually.
+#'   \item It applies the `total_pattern` to each row individually, providing a
+#'     more direct but less contextually validated extraction.
 #' }
 #'
-#' @param data A data frame containing timesheet data. Must include
-#'   `concatenated_text` and a `data_quality_flags` list-column.
-#' @param config A list containing the configuration for the group, including
-#'   `total_type` and `total_pattern`.
-#' @param use_period_grouping Logical. If `TRUE` (default), groups data by
-#'   `employee_period_id` to find a single total for the period.
-#' @param file_id_col Optional. The bare (unquoted) name of a column to add to
-#'   the grouping, for cases where `employee_period_id` is not unique across files.
+#' @param data A data frame containing the timesheet records. It must include
+#'   `concatenated_text` and a `data_quality_flags` list-column to track our
+#'   validation efforts.
+#' @param config A list containing the sanctioned configuration for the data
+#'   cohort, including the `total_type` and `total_pattern`.
+#' @param use_period_grouping A logical flag. When `TRUE` (the default), it
+#'   activates the more robust, period-based validation logic.
+#' @param file_id_col An optional, unquoted column name to enhance the uniqueness
+#'   of the period grouping, for cases where the `employee_period_id` may not
+#'   be unique across different files.
 #'
-#' @return The input data frame with a new column for the extracted total (e.g.,
-#'   `extracted_weekly_total_hours`) and an updated `data_quality_flags` column.
+#' @return The input data frame, now enriched with a new column for the validated
+#'   period total (e.g., `extracted_weekly_total_hours`) and an updated
+#'   `data_quality_flags` column that provides a transparent audit trail of the
+#'   validation process.
 #'
 #' @importFrom dplyr group_by mutate ungroup first case_when cur_data
 #' @importFrom rlang enquo as_label syms

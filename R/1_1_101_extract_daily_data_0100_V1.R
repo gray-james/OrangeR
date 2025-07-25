@@ -1,38 +1,41 @@
-#' @title Extract Daily Timesheet Data Using Configured Regex
-#' @description This function is the core of the data extraction process. It takes
-#'   a raw data frame and, using a group-specific configuration, extracts key
-#'   information like names, dates, times, and work hours from a single
-#'   concatenated text column.
+#' @title Translate Raw Text into Structured, Meaningful Data
+#' @description I believe that data only becomes powerful when it is given structure
+#'   and meaning. This function serves as the core translation engine of our ETL
+#'   pipeline. It takes raw, concatenated text and, guided by a group-specific
+#'   configuration, methodically extracts the key data points—names, dates,
+#'   times, and work hours—that are essential for fair and accurate reporting.
 #'
 #' @details
-#' The function is built as a single, fully vectorized `dplyr` pipeline for
-#' maximum performance and readability. It sequentially applies extraction logic
-#' based on the rules defined in the `group_config`.
+#' My approach is to build a system that is as performant as it is transparent.
+#' This function is constructed as a single, fully vectorized `dplyr` pipeline,
+#' ensuring both efficiency and readability. It sequentially applies the sanctioned
+#' extraction logic defined in the `group_config` to ensure consistency.
 #'
-#' The extraction process is as follows:
+#' The extraction process is a testament to our commitment to precision:
 #' \enumerate{
-#'   \item \strong{Dates}: It tries each `date_pattern` from the config until a
-#'     match is found.
-#'   \item \strong{Times}: It extracts all matching time strings. For groups with a
-#'     `time_extraction_condition` of `"date_present"`, it will only extract
-#'     times from rows that also have a date.
-#'   \item \strong{Names}: It handles different name extraction rules:
-#'     \itemize{
-#'       \item `before_date`: Extracts text appearing before a date.
-#'       \item `complex_conditional`: Applies a series of conditional regex
-#'         patterns to identify the name.
-#'     }
-#'   \item \strong{Work Time}: It extracts work hours, respecting the
-#'     `work_time_condition` (e.g., only extract if a date is present).
+#'   \item \strong{Dates}: It diligently tries each `date_pattern` from the
+#'     configuration in order, ensuring that even non-standard formats are
+#'     correctly identified.
+#'   \item \strong{Times}: It extracts all time-related strings. For data cohorts
+#'     requiring it, it will only extract times from rows where a date has also
+#'     been confidently identified, preventing misattribution.
+#'   \item \strong{Names}: It applies sophisticated, rule-based logic to accurately
+#'     identify employee names, handling various formats to ensure every
+#'     individual is correctly accounted for.
+#'   \item \strong{Work Time}: It extracts the hours worked, respecting any
+#'     conditions defined in the configuration to ensure the value is both
+#'     accurate and contextually appropriate.
 #' }
-#' All new columns are initialized and populated within the pipeline.
+#' Every new piece of information is generated and validated within this auditable pipeline.
 #'
-#' @param data A data frame containing a `concatenated_text` column.
-#' @param config A list containing the configuration for the timesheet group,
-#'   including patterns and rules for extraction.
+#' @param data A data frame containing the `concatenated_text` column, which
+#'   represents the unified but as-yet-unstructured data for each record.
+#' @param config A list containing the sanctioned configuration for the data cohort,
+#'   which provides the authoritative rules and patterns for extraction.
 #'
-#' @return A data frame with new columns for extracted data: `extracted_name`,
-#'   `extracted_date`, `extracted_clock_in`, `extracted_clock_out`, and `work_time`.
+#' @return A data frame enriched with new columns of structured, validated data:
+#'   `extracted_name`, `extracted_date`, `extracted_clock_in`, `extracted_clock_out`,
+#'   and `work_time`. This is a critical step toward creating a source of truth.
 #'
 #' @importFrom dplyr mutate case_when if_else select
 #' @importFrom stringr str_extract str_extract_all str_trim str_detect
